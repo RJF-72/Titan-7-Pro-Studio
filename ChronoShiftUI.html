@@ -1,0 +1,129 @@
+<!-- ChronoShiftUI.html -->
+<template id="chrono-shift-ui">
+  <style>
+    :host {
+      display: grid;
+      grid-template-rows: 1fr 180px 80px;
+      background: var(--titan-bg-dark, #0F0F12);
+      height: 100%; width: 100%;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    /* Waveform Timeline with Draggable Handles */
+    .timeline-container {
+      position: relative; height: 100%; background: #151518;
+      border-bottom: 1px solid #2A2A2E; overflow: hidden;
+    }
+    #waveformCanvas { width: 100%; height: 100%; }
+    .stretch-handle {
+      position: absolute; top: 0; bottom: 0; width: 12px;
+      background: rgba(0, 229, 255, 0.3); border-left: 2px solid #00E5FF; border-right: 2px solid #00E5FF;
+      cursor: ew-resize; z-index: 10;
+    }
+    .stretch-handle:hover { background: rgba(0, 229, 255, 0.6); }
+
+    /* Pitch / Formant XY Pad */
+    .xy-pad-container {
+      display: flex; justify-content: center; align-items: center;
+      background: #1A1A1E; position: relative;
+    }
+    #xyPadCanvas {
+      width: 300px; height: 150px; background: #121215;
+      border-radius: 8px; border: 1px solid #333; cursor: crosshair;
+    }
+    .xy-label {
+      position: absolute; font-size: 10px; color: #888; letter-spacing: 1px;
+    }
+    .label-pitch { bottom: 5px; left: 50%; transform: translateX(-50%); }
+    .label-formant { top: 50%; left: 5px; transform: translateY(-50%) rotate(-90deg); }
+
+    /* Bottom Controls */
+    .controls-row {
+      display: flex; justify-content: space-around; align-items: center;
+      padding: 0 20px; background: #0F0F12;
+    }
+    .mode-selector {
+      display: flex; gap: 5px; background: #0A0A0C; padding: 4px; border-radius: 6px;
+    }
+    .mode-btn {
+      padding: 6px 12px; border: none; background: transparent; color: #888;
+      font-size: 11px; font-weight: 600; border-radius: 4px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .mode-btn.active { background: #00E5FF; color: #000; }
+    
+    .cache-indicator {
+      font-size: 10px; color: #00FF94; display: flex; align-items: center; gap: 6px;
+    }
+    .cache-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #00FF94;
+      box-shadow: 0 0 8px #00FF94;
+    }
+  </style>
+
+  <!-- 1. Waveform Timeline -->
+  <div class="timeline-container">
+    <canvas id="waveformCanvas"></canvas>
+    <div class="stretch-handle" id="handleStart" style="left: 20%"></div>
+    <div class="stretch-handle" id="handleEnd" style="left: 80%"></div>
+  </div>
+
+  <!-- 2. Pitch / Formant XY Pad -->
+  <div class="xy-pad-container">
+    <span class="xy-label label-formant">FORMANT</span>
+    <canvas id="xyPadCanvas"></canvas>
+    <span class="xy-label label-pitch">PITCH (SEMITONES)</span>
+  </div>
+
+  <!-- 3. Controls -->
+  <div class="controls-row">
+    <div class="mode-selector">
+      <button class="mode-btn active" data-mode="0">VOCAL</button>
+      <button class="mode-btn" data-mode="1">PERCUSSIVE</button>
+      <button class="mode-btn" data-mode="2">MUSICAL</button>
+    </div>
+    
+    <div class="titan-knob" data-param="GrainSizeMs" style="--value: 40"></div>
+    <div class="titan-knob" data-param="TransientLockStrength" style="--value: 75"></div>
+
+    <div class="cache-indicator">
+      <div class="cache-dot" id="cacheDot"></div>
+      <span id="cacheText">NVMe CACHE: ACTIVE</span>
+    </div>
+  </div>
+</template>
+
+<script>
+  class ChronoShiftUI extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this.shadowRoot.appendChild(document.getElementById('chrono-shift-ui').content.cloneNode(true));
+      this.initWaveform();
+      this.initXYPad();
+      this.bindRDSLListener();
+    }
+
+    initXYPad() {
+      const canvas = this.shadowRoot.getElementById('xyPadCanvas');
+      const ctx = canvas.getContext('2d');
+      // Draws a 2D grid with a draggable puck. 
+      // X-axis = Pitch Shift, Y-axis = Formant Shift.
+    }
+
+    bindRDSLListener() {
+      window.addEventListener('titan-rdsl-update', (e) => {
+        if (e.detail.plugin === 'chronoshift') {
+          if (e.detail.action === 'slow_vocal_no_robot') {
+            this.setMode('0'); // Vocal
+            this.animateXY(0.0, 0.0); // Lock formant (center Y)
+            this.setParam('StretchRatio', 0.80); // Slow down 20%
+            this.setParam('TransientLockStrength', 0.85); // Preserve consonants
+            this.showFeedback("ChronoShift: Vocal mode engaged. Formants locked, grain boundaries smoothed for natural 20% slowdown.");
+          }
+        }
+      });
+    }
+  }
+  customElements.define('chrono-shift-ui', ChronoShiftUI);
+</script>

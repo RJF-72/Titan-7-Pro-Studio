@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Titan 7 Pro - Standalone Plugins</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="../titan-plugins.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    background: var(--titan-bg-dark);
+    color: var(--titan-text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+}
+.header {
+    background: var(--titan-bg-surface);
+    border-bottom: 1px solid var(--titan-border);
+    padding: 16px 24px;
+    display: flex; align-items: center; gap: 16px;
+}
+.header h1 { font-size: 20px; font-weight: 600; }
+.header .badge { font-size: 11px; color: var(--titan-accent); background: var(--titan-accent-glow); padding: 3px 8px; border-radius: 4px; }
+.header .subtitle { color: var(--titan-text-dim); font-size: 13px; margin-left: auto; }
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    padding: 24px;
+}
+.plugin-card {
+    background: var(--titan-bg-card);
+    border: 1px solid var(--titan-border);
+    border-radius: var(--titan-radius);
+    overflow: hidden;
+    transition: border-color var(--titan-transition);
+}
+.plugin-card:hover { border-color: var(--titan-accent); }
+.plugin-card .head {
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--titan-border);
+}
+.plugin-card .head i { font-size: 16px; }
+.plugin-card .head .name { font-size: 14px; font-weight: 600; }
+.plugin-card .head .cat { font-size: 11px; color: var(--titan-text-dimmer); margin-left: auto; }
+.plugin-card .body { padding: 12px 16px; }
+.plugin-card .desc { font-size: 12px; color: var(--titan-text-dim); margin-bottom: 12px; line-height: 1.4; }
+.plugin-card .params { display: flex; flex-direction: column; gap: 8px; }
+.plugin-card .param-row { display: flex; flex-direction: column; gap: 3px; }
+.plugin-card .param-row label { font-size: 11px; color: var(--titan-text-dim); display: flex; justify-content: space-between; }
+.plugin-card .param-row input[type="range"] {
+    width: 100%; height: 4px;
+    -webkit-appearance: none; appearance: none;
+    background: var(--titan-bg-hover);
+    border-radius: 2px; outline: none;
+}
+.plugin-card .param-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%;
+    background: var(--titan-accent); cursor: pointer;
+}
+.plugin-card .value { font-size: 11px; color: var(--titan-accent); font-weight: 600; }
+.plugin-card .native-badge {
+    font-size: 10px; color: var(--titan-cyan); background: rgba(0,212,255,0.1);
+    padding: 2px 6px; border-radius: 3px; margin-left: auto;
+}
+.plugin-card .ui-container { height: 500px; border-top: 1px solid var(--titan-border); display: flex; }
+.audio-bar {
+    background: var(--titan-bg-surface); border-bottom: 1px solid var(--titan-border);
+    padding: 12px 24px; display: flex; align-items: center; gap: 12px;
+}
+.audio-bar button {
+    background: var(--titan-accent); color: #fff; border: none; padding: 6px 16px; border-radius: 4px;
+    cursor: pointer; font-size: 12px; transition: background var(--titan-transition);
+}
+.audio-bar button:hover { background: #6a4ee8; }
+.audio-bar button.danger { background: var(--titan-red); }
+.audio-bar button.danger:hover { background: #dc2626; }
+.audio-bar .status { font-size: 12px; color: var(--titan-text-dim); margin-left: auto; }
+.audio-bar .audio-meter {
+    width: 120px; height: 4px; background: var(--titan-bg-hover); border-radius: 2px; overflow: hidden;
+}
+.audio-bar .audio-meter .fill {
+    height: 100%; background: var(--titan-green); border-radius: 2px; transition: width 50ms linear; width: 0%;
+}
+</style>
+</head>
+<body>
+<div class="header">
+    <i class="fas fa-microchip" style="color:var(--titan-accent);font-size:22px"></i>
+    <h1>Titan 7 Pro</h1>
+    <span class="badge">Standalone Plugins</span>
+    <span class="subtitle">29 effects &middot; 14 native UIs</span>
+    <a href="../index.html" style="color:var(--titan-text-dim);font-size:13px;text-decoration:none;margin-left:16px">
+        <i class="fas fa-arrow-left"></i> Back to DAW
+    </a>
+</div>
+<div class="audio-bar">
+    <button id="initBtn"><i class="fas fa-plug"></i> Init Audio</button>
+    <button id="testBtn" disabled><i class="fas fa-play"></i> Test Tone</button>
+    <button id="stopBtn" disabled class="danger"><i class="fas fa-stop"></i> Stop</button>
+    <span class="status" id="status">Click "Init Audio" to start</span>
+    <div class="audio-meter"><div class="fill" id="meterFill"></div></div>
+</div>
+<div class="grid" id="pluginGrid"></div>
+
+<script src="../../titan-driver-runtime.js"></script>
+<script src="../../node_modules/onnxruntime-web/dist/ort.min.js"></script>
+<script src="../../voxgenesis-model-adapter.js"></script>
+<script src="../vox-engine.js"></script>
+    <script src="../titan-plugins.js"></script>
+<script>
+let audioCtx = null;
+let testOsc = null;
+let testGain = null;
+let isInit = false;
+
+const $ = (id) => document.getElementById(id);
+
+function initAudio() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    isInit = true;
+    $('initBtn').disabled = true;
+    $('testBtn').disabled = false;
+    $('status').textContent = 'Audio ready';
+}
+
+function testTone() {
+    if (!audioCtx || testOsc) return;
+    testOsc = audioCtx.createOscillator();
+    testGain = audioCtx.createGain();
+    testGain.gain.value = 0.15;
+    testOsc.type = 'sine';
+    testOsc.frequency.value = 440;
+    testOsc.connect(testGain);
+    testGain.connect(audioCtx.destination);
+    testOsc.start();
+    $('testBtn').disabled = true;
+    $('stopBtn').disabled = false;
+    $('status').textContent = 'Test tone playing (440Hz)';
+}
+
+function stopTone() {
+    if (testOsc) {
+        try { testOsc.stop(); } catch(e) {}
+        try { testOsc.disconnect(); } catch(e) {}
+        testOsc = null;
+    }
+    if (testGain) {
+        try { testGain.disconnect(); } catch(e) {}
+        testGain = null;
+    }
+    $('testBtn').disabled = false;
+    $('stopBtn').disabled = true;
+    $('status').textContent = 'Stopped';
+}
+
+$('initBtn').addEventListener('click', initAudio);
+$('testBtn').addEventListener('click', testTone);
+$('stopBtn').addEventListener('click', stopTone);
+
+// Visual audio meter using oscillator output
+let meterInterval = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    try {
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+            if (audioCtx) {
+                const source = audioCtx.createMediaStreamSource(stream);
+                const analyzer = audioCtx.createAnalyser();
+                analyzer.fftSize = 256;
+                source.connect(analyzer);
+                const data = new Uint8Array(analyzer.frequencyBinCount);
+                meterInterval = setInterval(() => {
+                    analyzer.getByteFrequencyData(data);
+                    const avg = data.reduce((a, b) => a + b, 0) / data.length;
+                    $('meterFill').style.width = Math.min(100, avg * 2) + '%';
+                }, 50);
+            }
+        }).catch(() => {});
+    } catch(e) {}
+}
+
+// Build plugin grid
+function renderGrid() {
+    const grid = $('pluginGrid');
+    TitanPlugins.catalog.forEach(plugin => {
+        const card = document.createElement('div');
+        card.className = 'plugin-card';
+        const hasUI = !!plugin.ui;
+        card.innerHTML = `
+            <div class="head" style="border-left: 3px solid ${plugin.color}">
+                <i class="fas ${plugin.icon}" style="color:${plugin.color}"></i>
+                <span class="name">${plugin.name}</span>
+                ${hasUI ? '<span class="native-badge"><i class="fas fa-paint-brush"></i> Native UI</span>' : ''}
+                <span class="cat">${plugin.category}</span>
+            </div>
+            <div class="body">
+                <div class="desc">${plugin.desc}</div>
+                <div class="params">
+                    ${plugin.params.slice(0, 6).map(p => `
+                        <div class="param-row">
+                            <label>
+                                <span>${p.label}</span>
+                                <span class="value" id="val-${plugin.id}-${p.id}">${p.val}</span>
+                            </label>
+                            <input type="range"
+                                min="${p.min}" max="${p.max}" step="${p.step || 1}"
+                                value="${p.val}"
+                                data-plugin="${plugin.id}" data-param="${p.id}"
+                            >
+                        </div>
+                    `).join('')}
+                    ${plugin.params.length > 6 ? `<div style="font-size:11px;color:var(--titan-text-dimmer);text-align:center">+ ${plugin.params.length - 6} more params</div>` : ''}
+                </div>
+            </div>
+            ${hasUI ? `<div class="ui-container" id="ui-${plugin.id}"></div>` : ''}
+        `;
+        grid.appendChild(card);
+    });
+
+    // Wire up range sliders
+    document.querySelectorAll('input[type="range"][data-plugin]').forEach(input => {
+        input.addEventListener('input', () => {
+            const pluginId = input.dataset.plugin;
+            const paramId = input.dataset.param;
+            const val = parseFloat(input.value);
+            const valSpan = document.getElementById(`val-${pluginId}-${paramId}`);
+            if (valSpan) valSpan.textContent = val;
+
+            // Try to create/update processor chain
+            if (audioCtx && isInit) {
+                try {
+                    const plugin = TitanPlugins.getPlugin(pluginId);
+                    if (!plugin) return;
+                    if (window._demoChains && window._demoChains[pluginId]) {
+                        const chain = window._demoChains[pluginId];
+                        if (chain.update) chain.update(paramId, val);
+                    }
+                } catch(e) {}
+            }
+        });
+    });
+}
+
+// Load native UIs
+async function loadNativeUIs() {
+    await TitanPlugins.loadAllUIs();
+    // Mount native UIs into their containers
+    TitanPlugins.catalog.filter(p => p.ui).forEach(plugin => {
+        const container = document.getElementById(`ui-${plugin.id}`);
+        if (!container) return;
+        try {
+            const el = document.createElement(plugin.ui.tag);
+            container.appendChild(el);
+        } catch(e) {
+            container.innerHTML = `<div style="padding:12px;font-size:12px;color:var(--titan-text-dim)">UI not available</div>`;
+        }
+    });
+}
+
+renderGrid();
+loadNativeUIs();
+</script>
+</body>
+</html>
+
+

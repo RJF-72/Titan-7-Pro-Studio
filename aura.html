@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Titan 7 Pro - AURA Microphone Enhancement</title>
+    <link rel="icon" href="icon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="aura-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="aura-body">
+    <header class="aura-header">
+        <div class="aura-logo">
+            <i class="fas fa-microphone-alt"></i>
+            <div class="aura-brand">
+                <h1>AURA™</h1>
+                <span>Audio Universal Response Agent · Proprietary Technology</span>
+            </div>
+        </div>
+        <div class="aura-nav" id="auraNav">
+            <button class="nav-btn active" data-section="enhancement">
+                <i class="fas fa-sliders-h"></i> Enhancement
+            </button>
+            <button class="nav-btn" data-section="comparison">
+                <i class="fas fa-exchange-alt"></i> Compare
+            </button>
+            <button class="nav-btn" data-section="profiles">
+                <i class="fas fa-layer-group"></i> Profiles
+            </button>
+            <button class="nav-btn" id="btnBackToDAW">
+                <i class="fas fa-arrow-left"></i> Back to DAW
+            </button>
+        </div>
+    </header>
+
+    <div class="aura-main">
+        <!-- Left Panel - Input Analysis -->
+        <aside class="aura-panel input-panel">
+            <h2><i class="fas fa-microphone"></i> Input Microphone</h2>
+            <div class="mic-selector">
+                <select id="inputMicSelect">
+                   <option value="">Loading microphones...</option>
+                </select>
+                <button class="calibrate-btn" id="calibrateBtn">
+                    <i class="fas fa-magic"></i> Auto-Calibrate
+                </button>
+            </div>
+
+            <div class="mic-analysis">
+                <h3>Acoustic Fingerprint</h3>
+                <div class="analysis-visual">
+                    <canvas id="inputFrequencyResponse"></canvas>
+                </div>
+                <div class="mic-characteristics">
+                    <div class="characteristic">
+                        <span class="char-label">Frequency Range</span>
+                       <span class="char-value" id="freqRangeValue">--</span>
+                    </div>
+                    <div class="characteristic">
+                        <span class="char-label">Self Noise</span>
+                       <span class="char-value" id="selfNoiseValue">--</span>
+                    </div>
+                    <div class="characteristic">
+                        <span class="char-label">Dynamic Range</span>
+                       <span class="char-value" id="dynamicRangeValue">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="live-input-meter">
+                <h3>Input Level</h3>
+                <div class="stereo-meter">
+                    <div class="meter-channel">
+                        <div class="meter-track" id="inputMeterL">
+                            <div class="meter-fill"></div>
+                        </div>
+                        <span class="meter-label">L</span>
+                    </div>
+                    <div class="meter-channel">
+                        <div class="meter-track" id="inputMeterR">
+                            <div class="meter-fill"></div>
+                        </div>
+                        <span class="meter-label">R</span>
+                    </div>
+                </div>
+                <div class="input-peaks">
+                   <span id="peakValue">Peak: --</span>
+                   <span id="rmsValue">RMS: --</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center Panel - Section Container -->
+        <main class="aura-panel center-panel">
+            <!-- Enhancement Section -->
+            <div class="section-content section-enhancement">
+                <h2><i class="fas fa-bullseye"></i> Target Microphone</h2>
+                <div class="target-selector">
+                    <div class="target-card selected" data-target="u47">
+                        <div class="target-image">
+                            <i class="fas fa-microphone"></i>
+                        </div>
+                        <h3>Vintage Tube</h3>
+                        <p class="target-desc">Legendary tube condenser. Warm, rich vocals with smooth top end.</p>
+                        <div class="target-tags">
+                            <span class="tag">Vocals</span>
+                            <span class="tag">Warm</span>
+                            <span class="tag">Classic</span>
+                        </div>
+                        <div class="target-match">
+                            <span class="match-label">Match Quality</span>
+                            <div class="match-bar">
+                               <div class="match-fill" style="width: 0%"></div>
+                            </div>
+                           <span class="match-value">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="target-card" data-target="u87">
+                        <div class="target-image">
+                            <i class="fas fa-microphone"></i>
+                        </div>
+                        <h3>Studio FET</h3>
+                        <p class="target-desc">Industry standard. Versatile, balanced, present.</p>
+                        <div class="target-tags">
+                            <span class="tag">Versatile</span>
+                            <span class="tag">Balanced</span>
+                        </div>
+                        <div class="target-match">
+                            <span class="match-label">Match Quality</span>
+                            <div class="match-bar">
+                               <div class="match-fill" style="width: 0%"></div>
+                            </div>
+                           <span class="match-value">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="target-card" data-target="c800g">
+                        <div class="target-image">
+                            <i class="fas fa-microphone"></i>
+                        </div>
+                        <h3>Modern Air</h3>
+                        <p class="target-desc">Modern vocal clarity. Air, detail, and presence.</p>
+                        <div class="target-tags">
+                            <span class="tag">Modern</span>
+                            <span class="tag">Airy</span>
+                            <span class="tag">Detailed</span>
+                        </div>
+                        <div class="target-match">
+                            <span class="match-label">Match Quality</span>
+                            <div class="match-bar">
+                               <div class="match-fill" style="width: 0%"></div>
+                            </div>
+                           <span class="match-value">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="target-card" data-target="ela251">
+                        <div class="target-image">
+                            <i class="fas fa-microphone"></i>
+                        </div>
+                        <h3>Silky Tube</h3>
+                        <p class="target-desc">Silky smooth highs. Luxurious and refined.</p>
+                        <div class="target-tags">
+                            <span class="tag">Silky</span>
+                            <span class="tag">Refined</span>
+                        </div>
+                        <div class="target-match">
+                            <span class="match-label">Match Quality</span>
+                            <div class="match-bar">
+                               <div class="match-fill" style="width: 0%"></div>
+                            </div>
+                           <span class="match-value">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="target-card" data-target="c414">
+                        <div class="target-image">
+                            <i class="fas fa-microphone"></i>
+                        </div>
+                        <h3>Clear Detail</h3>
+                        <p class="target-desc">Detailed and flat. Perfect for instruments.</p>
+                        <div class="target-tags">
+                            <span class="tag">Detailed</span>
+                            <span class="tag">Flat</span>
+                        </div>
+                        <div class="target-match">
+                            <span class="match-label">Match Quality</span>
+                            <div class="match-bar">
+                               <div class="match-fill" style="width: 0%"></div>
+                            </div>
+                           <span class="match-value">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Section -->
+            <div class="section-content section-comparison" style="display:none">
+                <div class="compare-toolbar">
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" data-edit="trim"><i class="fas fa-cut"></i> Trim</button>
+                        <button class="toolbar-btn" data-edit="normalize"><i class="fas fa-wave-square"></i> Normalize</button>
+                        <button class="toolbar-btn" data-edit="gain"><i class="fas fa-volume-up"></i> Gain</button>
+                        <button class="toolbar-btn" data-edit="fadein"><i class="fas fa-angle-double-right"></i> Fade In</button>
+                        <button class="toolbar-btn" data-edit="fadeout"><i class="fas fa-angle-double-left"></i> Fade Out</button>
+                        <button class="toolbar-btn" data-edit="mute"><i class="fas fa-volume-mute"></i> Mute</button>
+                    </div>
+                </div>
+
+                <div class="compare-label">
+                    <span class="compare-label-original">Original (Raw)</span>
+                    <span class="compare-label-processed">Processed (AURA)</span>
+                </div>
+                <div class="compare-waveforms">
+                    <div class="compare-track">
+                        <div class="compare-track-label" style="color:var(--cyan)">Raw Input</div>
+                        <canvas class="compare-waveform" data-color="cyan" data-waveform-idx="0"></canvas>
+                    </div>
+                    <div class="compare-track">
+                        <div class="compare-track-label" style="color:var(--pink)">AURA Enhanced</div>
+                        <canvas class="compare-waveform" data-color="pink" data-waveform-idx="1"></canvas>
+                    </div>
+                    <div class="compare-track">
+                        <div class="compare-track-label" style="color:var(--accent)">Target Profile</div>
+                        <canvas class="compare-waveform" data-color="accent" data-waveform-idx="2"></canvas>
+                    </div>
+                    <div class="compare-track">
+                        <div class="compare-track-label" style="color:var(--green)">Difference</div>
+                        <canvas class="compare-waveform" data-color="green" data-waveform-idx="3"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profiles Section -->
+            <div class="section-content section-profiles" style="display:none">
+                <h2><i class="fas fa-layer-group"></i> Saved Profiles</h2>
+               <div class="profiles-list" id="profilesList"></div>
+            </div>
+        </main>
+
+        <!-- Right Panel - Processing Controls -->
+        <aside class="aura-panel controls-panel">
+            <h2><i class="fas fa-sliders-h"></i> Processing Controls</h2>
+
+            <div class="processing-section">
+                <h3>Transducer Morphing</h3>
+                <div class="control-group">
+                    <label>Harmonic Synthesis</label>
+                    <div class="slider-with-value">
+                        <input type="range" min="0" max="100" value="75" class="aura-slider">
+                        <span class="slider-value">75%</span>
+                    </div>
+                    <p class="control-desc">Adds tube/transformer saturation characteristics</p>
+                </div>
+
+                <div class="control-group">
+                    <label>Transient Shaping</label>
+                    <div class="slider-with-value">
+                        <input type="range" min="0" max="100" value="65" class="aura-slider">
+                        <span class="slider-value">65%</span>
+                    </div>
+                    <p class="control-desc">Matches attack and release characteristics</p>
+                </div>
+
+                <div class="control-group">
+                    <label>Spatial Convolution</label>
+                    <div class="slider-with-value">
+                        <input type="range" min="0" max="100" value="80" class="aura-slider">
+                        <span class="slider-value">80%</span>
+                    </div>
+                    <p class="control-desc">Applies capsule resonance and body characteristics</p>
+                </div>
+            </div>
+
+            <div class="processing-section">
+                <h3>AI Enhancement</h3>
+                <div class="toggle-control">
+                    <label>Adaptive Noise Reduction</label>
+                    <label class="switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-control">
+                    <label>Proximity Effect Correction</label>
+                    <label class="switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-control">
+                    <label>Room Acoustic Compensation</label>
+                    <label class="switch">
+                        <input type="checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="processing-section">
+                <h3>Processing Backend</h3>
+                <div class="gpu-status">
+                    <div class="status-item">
+                        <i class="fas fa-microchip"></i>
+                        <span>Audio Backend</span>
+                        <span class="status-value" id="backendValue">Unavailable</span>
+                    </div>
+                    <div class="status-item">
+                        <i class="fas fa-bolt"></i>
+                        <span>Processing Latency</span>
+                        <span class="status-value" id="latencyValue">--</span>
+                    </div>
+                    <div class="status-item">
+                        <i class="fas fa-memory"></i>
+                        <span>Sample Rate</span>
+                        <span class="status-value" id="sampleRateValue">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="aura-actions">
+                <button class="btn-aura-primary" id="applyAura">
+                    <i class="fas fa-check"></i> Apply Enhancement
+                </button>
+                <button class="btn-aura-secondary" id="bypassAura">
+                    <i class="fas fa-power-off"></i> Bypass
+                </button>
+                <button class="btn-aura-tertiary" id="saveProfileBtn">
+                    <i class="fas fa-save"></i> Save Profile
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- AURA Bot Assistant -->
+    <div class="aura-bot" id="auraBot">
+        <div class="bot-header" id="botHeader">
+            <div class="bot-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="bot-info">
+                <h4>AURA Assistant</h4>
+                <span class="bot-status online">Online</span>
+            </div>
+            <button class="bot-close" id="botToggleBtn"><i class="fas fa-chevron-down"></i></button>
+        </div>
+        <div class="bot-messages" id="botMessages">
+            <div class="bot-message">
+                <div class="message-content">
+                   <p>Hello. Connect a microphone or run calibration to populate AURA with measured response data and reusable enhancement profiles.</p>
+                </div>
+                <span class="message-time">Just now</span>
+            </div>
+        </div>
+        <div class="bot-input">
+            <input type="text" placeholder="Ask AURA for help..." id="botInputText">
+            <button id="botSendBtn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script src="aura-app.js"></script>
+</body>
+</html>

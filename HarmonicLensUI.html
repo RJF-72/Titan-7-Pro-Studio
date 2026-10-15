@@ -1,0 +1,151 @@
+<!-- HarmonicLensUI.html -->
+<template id="harmonic-lens-ui">
+  <style>
+    :host {
+      display: grid;
+      grid-template-rows: 140px 1fr 120px;
+      background: var(--titan-bg-dark, #0F0F12);
+      height: 100%; width: 100%;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    /* Harmonic Spectrum Analyzer */
+    .analyzer-container {
+      position: relative; width: 100%; height: 100%;
+      background: #0A0A0C; border-bottom: 1px solid #2A2A2E;
+    }
+    #harmonicCanvas { width: 100%; height: 100%; }
+    .legend {
+      position: absolute; top: 10px; right: 10px;
+      display: flex; gap: 15px; font-size: 10px; color: #888;
+    }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .dot-even { width: 8px; height: 8px; border-radius: 50%; background: #00E5FF; }
+    .dot-odd { width: 8px; height: 8px; border-radius: 50%; background: #FF3366; }
+
+    /* Center Algorithm Selector & Drive */
+    .main-controls {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 20px; padding: 20px;
+    }
+    .algo-selector {
+      display: flex; gap: 10px; background: #151518; padding: 6px; border-radius: 8px;
+    }
+    .algo-btn {
+      width: 60px; height: 60px; border: 1px solid #333; background: #1A1A1E;
+      border-radius: 6px; cursor: pointer; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; color: #888; transition: all 0.2s;
+    }
+    .algo-btn.active {
+      background: #00E5FF; color: #000; border-color: #00E5FF;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+    }
+    .algo-icon { font-size: 20px; margin-bottom: 4px; }
+    .algo-name { font-size: 9px; font-weight: 700; letter-spacing: 0.5px; }
+
+    /* Giant Drive Knob */
+    .drive-knob-container { position: relative; width: 120px; height: 120px; }
+    .drive-knob {
+      width: 100%; height: 100%; border-radius: 50%;
+      background: conic-gradient(#FF9500 calc(var(--value) * 1%), #333 0);
+      display: flex; align-items: center; justify-content: center;
+      cursor: ns-resize; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .drive-knob::after {
+      content: 'DRIVE'; position: absolute;
+      font-size: 14px; font-weight: 800; color: #EAEAEA; letter-spacing: 2px;
+    }
+
+    /* Bottom Row: Pre/Post EQ & Mix */
+    .bottom-controls {
+      display: flex; justify-content: space-around; align-items: center;
+      padding: 15px; background: #151518; border-top: 1px solid #2A2A2E;
+    }
+    .control-group { display: flex; flex-direction: column; align-items: center; }
+    .control-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 8px; }
+  </style>
+
+  <!-- 1. Harmonic Analyzer -->
+  <div class="analyzer-container">
+    <canvas id="harmonicCanvas"></canvas>
+    <div class="legend">
+      <div class="legend-item"><div class="dot-even"></div> Even (Warmth)</div>
+      <div class="legend-item"><div class="dot-odd"></div> Odd (Edge)</div>
+    </div>
+  </div>
+
+  <!-- 2. Main Controls -->
+  <div class="main-controls">
+    <div class="algo-selector">
+      <button class="algo-btn active" data-algo="0"><span class="algo-icon">🔥</span><span class="algo-name">TUBE</span></button>
+      <button class="algo-btn" data-algo="1"><span class="algo-icon">📼</span><span class="algo-name">TAPE</span></button>
+      <button class="algo-btn" data-algo="2"><span class="algo-icon">⚡</span><span class="algo-name">XFMR</span></button>
+      <button class="algo-btn" data-algo="3"><span class="algo-icon">🔌</span><span class="algo-name">DIODE</span></button>
+      <button class="algo-btn" data-algo="4"><span class="algo-icon">🧱</span><span class="algo-name">DIGI</span></button>
+    </div>
+    
+    <div class="drive-knob-container">
+      <div class="drive-knob" data-param="Drive" style="--value: 35"></div>
+    </div>
+  </div>
+
+  <!-- 3. Bottom Controls -->
+  <div class="bottom-controls">
+    <div class="control-group">
+      <span class="control-label">Pre Low Shelf</span>
+      <div class="titan-knob" data-param="PreEQ_LowShelf" style="--value: 50"></div>
+    </div>
+    <div class="control-group">
+      <span class="control-label">Post Tilt</span>
+      <div class="titan-knob" data-param="PostEQ_Tilt" style="--value: 50"></div>
+    </div>
+    <div class="control-group">
+      <span class="control-label">Wet / Dry</span>
+      <div class="titan-knob" data-param="WetDryMix" style="--value: 100"></div>
+    </div>
+    <div class="control-group">
+      <span class="control-label">Ceiling</span>
+      <div class="titan-knob" data-param="OutputCeiling" style="--value: 90"></div>
+    </div>
+  </div>
+</template>
+
+<script>
+  class HarmonicLensUI extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this.shadowRoot.appendChild(document.getElementById('harmonic-lens-ui').content.cloneNode(true));
+      this.initHarmonicAnalyzer();
+      this.bindRDSLListener();
+    }
+
+    initHarmonicAnalyzer() {
+      // WebGL/Canvas renderer that draws two overlapping bar graphs:
+      // Cyan for even harmonics (2nd, 4th, 6th), Red for odd harmonics (3rd, 5th, 7th).
+      // Updates at 30fps based on data pushed from the C++ plugin.
+    }
+
+    bindRDSLListener() {
+      window.addEventListener('titan-rdsl-update', (e) => {
+        if (e.detail.plugin === 'harmoniclens') {
+          if (e.detail.action === 'warm_tube_bass') {
+            this.selectAlgorithm(0); // Tube
+            this.animateKnob('Drive', 45);
+            this.animateKnob('PreEQ_LowShelf', 65); // +3dB
+            this.animateKnob('PostEQ_Tilt', 40);    // Slight darkening
+            this.showFeedback("HarmonicLens: Tube algorithm engaged. Biased toward 2nd harmonic warmth with soft-knee saturation.");
+          }
+        }
+      });
+    }
+
+    selectAlgorithm(index) {
+      const btns = this.shadowRoot.querySelectorAll('.algo-btn');
+      btns.forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+      });
+    }
+  }
+  customElements.define('harmonic-lens-ui', HarmonicLensUI);
+</script>

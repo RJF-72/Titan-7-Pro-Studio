@@ -1,0 +1,1112 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VoxGenesis UI</title>
+</head>
+<body>
+
+<template id="vox-genesis-ui">
+  <style>
+    :host {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg-surface, #0c0c18);
+      color: var(--text, #e2e2f0);
+      font-family: var(--font, sans-serif);
+      border-radius: var(--radius-lg, 12px);
+      height: 100%;
+      overflow: hidden;
+    }
+    .vg-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border, #2a2a55);
+    }
+    .vg-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--pink, #ff6b9d);
+    }
+    .vg-title i { font-size: 18px; }
+    .vg-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      background: rgba(255, 107, 157, 0.15);
+      border: 1px solid var(--pink, #ff6b9d);
+      border-radius: 4px;
+      color: var(--pink, #ff6b9d);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .vg-main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 12px;
+      overflow-y: auto;
+    }
+    .vg-panel {
+      background: var(--bg-elevated, #14142a);
+      border: 1px solid var(--border, #2a2a55);
+      border-radius: var(--radius, 8px);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .vg-panel h3 {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dim, #8888b0);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 0;
+    }
+    .vg-control {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .vg-control label {
+      font-size: 11px;
+      color: var(--text-dim, #8888b0);
+    }
+    .vg-control input[type="text"] {
+      background: var(--bg-deep, #07070d);
+      border: 1px solid var(--border, #2a2a55);
+      color: var(--text, #e2e2f0);
+      padding: 6px 8px;
+      border-radius: var(--radius-sm, 4px);
+      font-size: 12px;
+      font-family: var(--font, sans-serif);
+    }
+    .vg-slider {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .vg-slider input {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 4px;
+      background: var(--bg-card, #1c1c38);
+      border-radius: 2px;
+      outline: none;
+    }
+    .vg-slider input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      background: var(--pink, #ff6b9d);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .vg-value {
+      font-family: var(--mono, monospace);
+      font-size: 11px;
+      color: var(--pink, #ff6b9d);
+      min-width: 36px;
+      text-align: right;
+    }
+    .vg-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .vg-btn {
+      flex: 1;
+      min-width: 80px;
+      padding: 8px;
+      border: none;
+      border-radius: var(--radius, 8px);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: 0.2s ease;
+    }
+    .vg-btn.primary {
+      background: linear-gradient(135deg, var(--pink, #ff6b9d), var(--accent, #7c5cff));
+      color: #fff;
+    }
+    .vg-btn.secondary {
+      background: var(--bg-card, #1c1c38);
+      color: var(--text-dim, #8888b0);
+      border: 1px solid var(--border, #2a2a55);
+    }
+    .vg-btn.danger {
+      background: transparent;
+      color: var(--red, #ef4444);
+      border: 1px solid var(--red, #ef4444);
+    }
+    .vg-btn:hover { opacity: 0.9; }
+    .vg-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-dimmer, #5c5c80);
+    }
+    .vg-status .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green, #22c55e);
+      animation: pulse 2s infinite;
+    }
+    .vg-meters {
+      display: flex;
+      gap: 4px;
+      height: 40px;
+      align-items: flex-end;
+      background: var(--bg-deep, #07070d);
+      border-radius: var(--radius-sm, 4px);
+      padding: 4px;
+    }
+    .vg-bar {
+      flex: 1;
+      background: linear-gradient(180deg, var(--pink, #ff6b9d), var(--accent, #7c5cff));
+      border-radius: 2px;
+      transition: height 0.08s ease;
+      min-height: 2px;
+    }
+    .vg-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-dim, #8888b0);
+    }
+    .vg-toggle input[type="checkbox"] {
+      accent-color: var(--pink, #ff6b9d);
+    }
+    .model-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .model-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      background: var(--bg-card, #1c1c38);
+      border: 1px solid var(--border, #2a2a55);
+      border-radius: var(--radius-sm, 4px);
+      cursor: pointer;
+      transition: 0.15s ease;
+      font-size: 12px;
+    }
+    .model-item:hover { border-color: var(--accent, #7c5cff); }
+    .model-item.active {
+      border-color: var(--pink, #ff6b9d);
+      background: rgba(255, 107, 157, 0.08);
+    }
+    .model-item .model-name { font-weight: 500; }
+    .model-item .model-meta {
+      font-size: 10px;
+      color: var(--text-dimmer, #5c5c80);
+    }
+    .model-item .model-delete {
+      background: transparent;
+      border: none;
+      color: var(--text-dimmer, #5c5c80);
+      cursor: pointer;
+      padding: 4px;
+      font-size: 11px;
+    }
+    .model-item .model-delete:hover { color: var(--red, #ef4444); }
+    .model-empty {
+      text-align: center;
+      padding: 16px;
+      font-size: 12px;
+      color: var(--text-dimmer, #5c5c80);
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    @media (max-width: 800px) {
+      .vg-main { grid-template-columns: 1fr; grid-template-rows: auto; }
+    }
+  </style>
+
+  <div class="vg-header">
+    <div class="vg-title">
+      <i class="fas fa-dna"></i>
+      <span>VoxGenesisâ„¢</span>
+      <span class="vg-badge" style="margin-left:6px">Proprietary</span>
+    </div>
+    <span class="vg-badge" id="vgStatusBadge">Standby</span>
+  </div>
+
+  <div class="vg-main">
+    <!-- VOCAL CLONE PANEL -->
+    <div class="vg-panel">
+      <h3><i class="fas fa-microphone-alt"></i> Vocal Clone</h3>
+
+      <button class="vg-btn secondary" id="armVoxBtn">
+        <i class="fas fa-bolt"></i> Arm VoxGenesis
+      </button>
+
+      <button class="vg-btn secondary" id="liveRepairBtn">
+        <i class="fas fa-headphones-alt"></i> Live Repair Off
+      </button>
+
+      <div class="vg-control">
+        <label>Model Name</label>
+        <input type="text" id="modelNameInput" placeholder="e.g. Lead Vocal, Artist Clone">
+      </div>
+      <div class="vg-control">
+        <label>Clone Intensity</label>
+        <div class="vg-slider">
+          <input type="range" id="cloneIntensity" min="0" max="100" value="75">
+          <span class="vg-value" id="cloneIntensityValue">75%</span>
+        </div>
+      </div>
+      <div class="vg-control">
+        <label>Formant Preserve</label>
+        <div class="vg-slider">
+          <input type="range" id="formantPreserve" min="0" max="100" value="60">
+          <span class="vg-value" id="formantPreserveValue">60%</span>
+        </div>
+      </div>
+      <div class="vg-control">
+        <label>Render Buffer</label>
+        <div class="vg-slider">
+          <input type="range" id="latencyBuffer" min="1000" max="10000" step="100" value="5000">
+          <span class="vg-value" id="latencyBufferValue">5000ms</span>
+        </div>
+      </div>
+      <div class="vg-actions">
+        <button class="vg-btn primary" id="captureVoiceBtn"><i class="fas fa-record-vinyl"></i> Capture & Save</button>
+        <button class="vg-btn secondary" id="uploadAudioBtn"><i class="fas fa-upload"></i> Upload Audio</button>
+        <button class="vg-btn secondary" id="clearCloneBtn"><i class="fas fa-trash"></i> Clear</button>
+      </div>
+      <input type="file" id="vgAudioFileInput" accept="audio/*" style="opacity:0; position:absolute; width:0; height:0; overflow:hidden">
+    </div>
+
+    <!-- PITCH PANEL -->
+    <div class="vg-panel">
+      <h3><i class="fas fa-magic"></i> Pitch & Correction</h3>
+      <div class="vg-control">
+        <label>Pitch Correction Strength</label>
+        <div class="vg-slider">
+          <input type="range" id="pitchCorrection" min="0" max="100" value="80">
+          <span class="vg-value" id="pitchCorrectionValue">80%</span>
+        </div>
+      </div>
+      <div class="vg-control">
+        <label>Naturalness</label>
+        <div class="vg-slider">
+          <input type="range" id="naturalness" min="0" max="100" value="65">
+          <span class="vg-value" id="naturalnessValue">65%</span>
+        </div>
+      </div>
+      <div class="vg-control">
+        <label>Sibilance Protection</label>
+        <div class="vg-slider">
+          <input type="range" id="sibilance" min="0" max="100" value="85">
+          <span class="vg-value" id="sibilanceValue">85%</span>
+        </div>
+      </div>
+      <div class="vg-toggle">
+        <label for="scaleSnap">Snap to Scale</label>
+        <input type="checkbox" id="scaleSnap" checked>
+      </div>
+    </div>
+
+    <!-- SAVED MODELS PANEL -->
+    <div class="vg-panel">
+      <h3><i class="fas fa-book"></i> Saved Models</h3>
+      <div class="model-list" id="modelList">
+        <div class="model-empty">No voice prints saved yet.</div>
+      </div>
+      <div class="vg-actions">
+        <button class="vg-btn primary" id="loadModelBtn"><i class="fas fa-upload"></i> Load Selected</button>
+        <button class="vg-btn danger" id="deleteModelBtn"><i class="fas fa-trash"></i> Delete</button>
+        <button class="vg-btn secondary" id="installModelPackBtn"><i class="fas fa-microchip"></i> Install Model Pack</button>
+      </div>
+    </div>
+
+    <!-- SYNTHESIS PANEL -->
+    <div class="vg-panel">
+      <h3><i class="fas fa-wave-square"></i> Synthesis</h3>
+      <div class="vg-control">
+        <label>Synthesis Amount</label>
+        <div class="vg-slider">
+          <input type="range" id="synthesisAmount" min="0" max="100" value="75">
+          <span class="vg-value" id="synthesisAmountValue">75%</span>
+        </div>
+      </div>
+      <div class="vg-control">
+        <label>Blend (Dry / Wet)</label>
+        <div class="vg-slider">
+          <input type="range" id="synthesisBlend" min="0" max="100" value="50">
+          <span class="vg-value" id="synthesisBlendValue">50%</span>
+        </div>
+      </div>
+      <div class="vg-control">
+        <label>Emotion / Timbre</label>
+        <div class="vg-slider">
+          <input type="range" id="timbreShift" min="-50" max="50" value="0">
+          <span class="vg-value" id="timbreShiftValue">0</span>
+        </div>
+      </div>
+      <div class="vg-actions">
+        <button class="vg-btn primary" id="processTakeBtn"><i class="fas fa-play"></i> Synthesize Take</button>
+        <button class="vg-btn secondary" id="bypassBtn"><i class="fas fa-power-off"></i> Bypass</button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="vg-meters" id="vgMeters">
+      <div class="vg-bar" style="height:10%"></div>
+      <div class="vg-bar" style="height:20%"></div>
+      <div class="vg-bar" style="height:15%"></div>
+      <div class="vg-bar" style="height:30%"></div>
+      <div class="vg-bar" style="height:25%"></div>
+      <div class="vg-bar" style="height:40%"></div>
+      <div class="vg-bar" style="height:35%"></div>
+      <div class="vg-bar" style="height:50%"></div>
+    </div>
+    <div class="vg-status">
+      <span class="dot"></span>
+      <span id="vgStatusText">Ready â€” waiting for vocal input</span>
+    </div>
+  </div>
+</template>
+
+<script>
+(function() {
+  const STORAGE_KEY = 'voxGenesisModels';
+
+  class VoxGenesisUI extends HTMLElement {
+    constructor() {
+      super();
+      const template = document.getElementById('vox-genesis-ui');
+      this.attachShadow({ mode: 'open' });
+      this.shadowRoot.appendChild(template.content.cloneNode(true));
+      this.state = {
+        cloneIntensity: 75,
+        formantPreserve: 60,
+        latencyBuffer: 5000,
+        pitchCorrection: 80,
+        naturalness: 65,
+        sibilance: 85,
+        scaleSnap: true,
+        synthesisAmount: 75,
+        synthesisBlend: 50,
+        timbreShift: 0,
+        bypass: false,
+        hasClone: false,
+        processing: false,
+        selectedModelId: null,
+        isVocal: false,
+        vocalConfidence: 0,
+        audioData: null,
+        audioFeatures: null,
+        liveRepairActive: false,
+        _sourceBuffer: null
+      };
+    }
+
+    static get observedAttributes() {
+      return ['is-vocal', 'vocal-confidence', 'audio-buffer'];
+    }
+
+    attributeChangedCallback(name, oldVal, newVal) {
+      if (name === 'is-vocal') this.state.isVocal = newVal === 'true';
+      if (name === 'vocal-confidence') this.state.vocalConfidence = parseFloat(newVal) || 0;
+      if (name === 'audio-buffer' && newVal) {
+        try { this.state.audioData = JSON.parse(newVal); } catch (e) { this.state.audioData = null; }
+      }
+      this.updateVocalStatus();
+    }
+
+    setAudioBuffer(buffer) {
+      this.state._sourceBuffer = buffer;
+    }
+
+    updateVocalStatus() {
+      const statusText = this.shadowRoot.getElementById('vgStatusText');
+      const captureBtn = this.shadowRoot.getElementById('captureVoiceBtn');
+      if (!statusText || !captureBtn) return;
+      if (this.state.isVocal) {
+        statusText.textContent = `Vocal detected (${Math.round(this.state.vocalConfidence * 100)}% confidence) â€” ready to clone`;
+        captureBtn.disabled = false;
+        captureBtn.style.opacity = '1';
+      } else if (this.state.audioData) {
+        statusText.textContent = 'No clear vocal detected â€” voice conversion unavailable for this file';
+        captureBtn.disabled = true;
+        captureBtn.style.opacity = '0.5';
+      } else {
+        statusText.textContent = 'Ready â€” waiting for vocal input';
+        captureBtn.disabled = false;
+        captureBtn.style.opacity = '1';
+      }
+    }
+
+    async analyzeAudio(audioBuffer) {
+      if (!audioBuffer || !audioBuffer.getChannelData) return;
+      const channelData = audioBuffer.getChannelData(0);
+      const sampleRate = audioBuffer.sampleRate;
+      const windowSize = Math.floor(sampleRate * 0.05);
+      const energies = [];
+      const zeroCrossings = [];
+      const spectralPeaks = [];
+      let totalCentroid = 0;
+
+      for (let i = 0; i < channelData.length; i += windowSize) {
+        let sum = 0;
+        let crossings = 0;
+        const end = Math.min(i + windowSize, channelData.length);
+        for (let j = i; j < end; j++) {
+          const sample = channelData[j];
+          sum += sample * sample;
+          if (j > i && ((sample >= 0 && channelData[j - 1] < 0) || (sample < 0 && channelData[j - 1] >= 0))) {
+            crossings++;
+          }
+        }
+        energies.push(sum / (end - i));
+        zeroCrossings.push(crossings / (end - i));
+      }
+
+      const avgEnergy = energies.reduce((a, b) => a + b, 0) / energies.length;
+      const energyVariance = energies.reduce((a, b) => a + (b - avgEnergy) ** 2, 0) / energies.length;
+      const avgZeroCrossingRate = zeroCrossings.reduce((a, b) => a + b, 0) / zeroCrossings.length;
+      const dynamicRange = Math.max(...energies) / (Math.min(...energies) || 1);
+
+      const fftSize = 1024;
+      for (let offset = 0; offset < channelData.length - fftSize; offset += fftSize) {
+        let weightedSum = 0;
+        let magnitudeSum = 0;
+        let maxMagnitude = 0;
+        let maxBin = 0;
+        for (let k = 0; k < fftSize; k++) {
+          const sample = channelData[offset + k] || 0;
+          const magnitude = Math.abs(sample);
+          weightedSum += k * magnitude;
+          magnitudeSum += magnitude;
+          if (magnitude > maxMagnitude) {
+            maxMagnitude = magnitude;
+            maxBin = k;
+          }
+        }
+        totalCentroid += magnitudeSum > 0 ? weightedSum / magnitudeSum : 0;
+        spectralPeaks.push(maxBin / fftSize);
+      }
+
+      const avgSpectralCentroid = totalCentroid / Math.ceil(channelData.length / fftSize);
+      const avgSpectralPeak = spectralPeaks.reduce((a, b) => a + b, 0) / spectralPeaks.length;
+
+      const confidence = Math.min(1, Math.max(0,
+        (avgEnergy > 0.001 ? 0.25 : 0) +
+        (dynamicRange > 2 && dynamicRange < 50 ? 0.25 : 0) +
+        (avgSpectralCentroid > 500 && avgSpectralCentroid < 4000 ? 0.25 : 0) +
+        (avgZeroCrossingRate > 0.01 && avgZeroCrossingRate < 0.3 ? 0.25 : 0)
+      ));
+      const isVocal = confidence > 0.6;
+
+      this.state.isVocal = isVocal;
+      this.state.vocalConfidence = confidence;
+      this.state.audioFeatures = {
+        avgEnergy,
+        energyVariance,
+        dynamicRange,
+        avgSpectralCentroid,
+        avgSpectralPeak,
+        avgZeroCrossingRate,
+        sampleRate,
+        duration: audioBuffer.duration,
+        length: channelData.length
+      };
+      this.setAttribute('is-vocal', String(isVocal));
+      this.setAttribute('vocal-confidence', String(confidence));
+      this.updateVocalStatus();
+    }
+
+    connectedCallback() {
+      this.bindSlider('cloneIntensity', '%');
+      this.bindSlider('formantPreserve', '%');
+      this.bindSlider('latencyBuffer', 'ms');
+      this.bindSlider('pitchCorrection', '%');
+      this.bindSlider('naturalness', '%');
+      this.bindSlider('sibilance', '%');
+      this.bindSlider('synthesisAmount', '%');
+      this.bindSlider('synthesisBlend', '%');
+      this.bindSlider('timbreShift', '');
+
+      this.shadowRoot.getElementById('scaleSnap').addEventListener('change', (e) => {
+        this.state.scaleSnap = e.target.checked;
+      });
+
+      this.shadowRoot.getElementById('captureVoiceBtn').addEventListener('click', () => this.captureVoice());
+      this.shadowRoot.getElementById('uploadAudioBtn').addEventListener('click', () => {
+        this.shadowRoot.getElementById('vgAudioFileInput').click();
+      });
+      this.shadowRoot.getElementById('vgAudioFileInput').addEventListener('change', (e) => this.handleAudioUpload(e));
+      this.shadowRoot.getElementById('clearCloneBtn').addEventListener('click', () => this.clearClone());
+      this.shadowRoot.getElementById('processTakeBtn').addEventListener('click', () => this.processTake());
+      this.shadowRoot.getElementById('bypassBtn').addEventListener('click', () => this.toggleBypass());
+      this.shadowRoot.getElementById('liveRepairBtn').addEventListener('click', () => this.toggleLiveRepair());
+      this.shadowRoot.getElementById('loadModelBtn').addEventListener('click', () => this.loadSelectedModel());
+      this.shadowRoot.getElementById('deleteModelBtn').addEventListener('click', () => this.deleteSelectedModel());
+      this.shadowRoot.getElementById('installModelPackBtn')?.addEventListener('click', () => this.installModelPack());
+      this.shadowRoot.getElementById('armVoxBtn').addEventListener('click', () => this.toggleArm());
+
+      this.renderModelList();
+      this.startMeterAnimation();
+    }
+
+    bindSlider(id, suffix) {
+      const input = this.shadowRoot.getElementById(id);
+      const value = this.shadowRoot.getElementById(id + 'Value');
+      if (!input || !value) return;
+      input.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        this.state[id] = val;
+        value.textContent = val + suffix;
+      });
+    }
+
+    getStoredModels() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    saveStoredModels(models) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(models));
+    }
+
+    generateModelId() {
+      return 'vgm_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
+    }
+
+    toggleArm() {
+      const engine = window.voxEngine;
+      if (!engine) {
+        this.setStatus('VoxEngine not initialized', 'Error', 'var(--red, #ef4444)');
+        return;
+      }
+
+      if (!engine.voxArmed) {
+        engine.arm();
+        this.setStatus('VoxGenesis armed â€” ready to record', 'Armed', 'var(--green, #22c55e)');
+        this.shadowRoot.getElementById('armVoxBtn').innerHTML =
+          '<i class="fas fa-bolt"></i> Disarm VoxGenesis';
+      } else {
+        engine.disarm();
+        this.setStatus('VoxGenesis disarmed', 'Disarmed', 'var(--red, #ef4444)');
+        this.shadowRoot.getElementById('armVoxBtn').innerHTML =
+          '<i class="fas fa-bolt"></i> Arm VoxGenesis';
+      }
+    }
+
+    async toggleLiveRepair() {
+      const engine = window.voxEngine;
+      const button = this.shadowRoot.getElementById('liveRepairBtn');
+      if (!engine || !button) {
+        this.setStatus('VoxEngine not initialized', 'Error', 'var(--red, #ef4444)');
+        return;
+      }
+
+      if (this.state.liveRepairActive) {
+        await this.stopLiveRepair();
+        return;
+      }
+
+      if (!navigator.mediaDevices?.getUserMedia) {
+        this.setStatus('Microphone access is not available in this environment.', 'Error', 'var(--red, #ef4444)');
+        return;
+      }
+
+      try {
+        if (engine.ctx && engine.ctx.state === 'suspended') {
+          await engine.ctx.resume();
+        }
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+            channelCount: { ideal: 1 }
+          }
+        });
+        window.liveInputStream = stream;
+        engine.arm();
+        const model = this.state.selectedModelId ? engine.getModel(this.state.selectedModelId) : null;
+        const settings = {
+          cloneIntensity: this.state.cloneIntensity / 100,
+          formantPreserve: this.state.formantPreserve / 100,
+          repairAmount: this.state.naturalness / 100,
+          wet: this.state.synthesisBlend / 100
+        };
+        if (typeof engine.startRealtimeRepair === 'function') {
+          engine.startRealtimeRepair(stream, settings);
+        } else {
+          engine.beginCapture(stream, { realtime: true, ...settings });
+        }
+        this.state.liveRepairActive = true;
+        button.innerHTML = '<i class="fas fa-headphones-alt"></i> Stop Live Repair';
+        this.setStatus(model ? 'Live repair monitor running for ' + model.name + '.' : 'Live repair monitor running.', 'Live', 'var(--cyan, #00d4ff)');
+      } catch (err) {
+        console.error('[VoxGenesis] live repair start failed:', err);
+        this.state.liveRepairActive = false;
+        if (window.liveInputStream) {
+          window.liveInputStream.getTracks().forEach((track) => track.stop());
+          window.liveInputStream = null;
+        }
+        button.innerHTML = '<i class="fas fa-headphones-alt"></i> Live Repair Off';
+        this.setStatus('Live repair failed: ' + err.message, 'Error', 'var(--red, #ef4444)');
+      }
+    }
+
+    async stopLiveRepair() {
+      const engine = window.voxEngine;
+      const button = this.shadowRoot.getElementById('liveRepairBtn');
+      this.state.liveRepairActive = false;
+      if (engine) {
+        engine.disarm();
+      }
+      if (window.liveInputStream) {
+        window.liveInputStream.getTracks().forEach((track) => track.stop());
+        window.liveInputStream = null;
+      }
+      if (button) {
+        button.innerHTML = '<i class="fas fa-headphones-alt"></i> Live Repair Off';
+      }
+      this.setStatus('Live repair stopped.', 'Standby', 'var(--text-dimmer, #5c5c80)');
+    }
+
+    async captureVoice() {
+      if (!this.state.isVocal) {
+        this.setStatus('No vocal detected. Load or import a vocal-only file first.', 'Error', 'var(--red, #ef4444)');
+        return;
+      }
+      const nameInput = this.shadowRoot.getElementById('modelNameInput');
+      const name = (nameInput?.value || '').trim() || 'Untitled Model';
+
+      this.setStatus('Capturing voice print and checking singing model...', 'Recording', 'var(--red, #ef4444)');
+
+      try {
+        const engine = window.voxEngine;
+        const audioCtx = engine?.ctx;
+        if (!audioCtx) throw new Error('Audio engine not initialized');
+
+        let renderBuffer = null;
+
+        if (this.state._sourceBuffer && this.state._sourceBuffer.getChannelData) {
+          const raw = this.state._sourceBuffer.getChannelData(0);
+          const offline = new OfflineAudioContext(1, raw.length, audioCtx.sampleRate);
+          const src = offline.createBufferSource();
+          const buf = offline.createBuffer(1, raw.length, offline.sampleRate);
+          buf.getChannelData(0).set(raw);
+          src.buffer = buf;
+          src.connect(offline.destination);
+          src.start();
+          renderBuffer = await offline.startRendering();
+        } else if (this.state.audioFeatures?.duration) {
+          const offline = new OfflineAudioContext(1, Math.floor((this.state.audioFeatures.duration || 2) * audioCtx.sampleRate), audioCtx.sampleRate);
+          const silence = offline.createBuffer(1, offline.length, offline.sampleRate);
+          renderBuffer = await offline.startRendering();
+        } else {
+          throw new Error('No source audio available for model capture');
+        }
+
+        const model = await engine.captureModel(name, renderBuffer, this.state.timbreDescriptor, { cloneIntensity: this.state.cloneIntensity, formantPreserve: this.state.formantPreserve, latencyBuffer: this.state.latencyBuffer });
+        this.state.hasClone = true;
+        this.state.selectedModelId = model.id;
+        const storedModels = this.getStoredModels().filter((entry) => entry.id !== model.id);
+        storedModels.unshift({
+          id: model.id,
+          name: model.name,
+          createdAt: model.createdAt,
+          status: model.status,
+          fingerprint: model.voicePrint ? Math.round((model.voicePrint.confidence || 0) * 100) + '% voice print' : 'voice print',
+          settings: model.settings || {}
+        });
+        this.saveStoredModels(storedModels.slice(0, 24));
+        this.renderModelList();
+        const frameCount = model.features?.stats?.frameCount ?? 0;
+        const dur = model.features?.stats?.duration ?? 0;
+        this.setStatus(`Voice print "${name}" captured (${frameCount} frames, ${dur.toFixed(1)}s). ${engine.hasSingingModel && engine.hasSingingModel() ? 'Singing model ready.' : 'Install model assets for true clone-to-singing; local preview is available.'}`, engine.hasSingingModel && engine.hasSingingModel() ? 'Clone Ready' : 'Print Ready', 'var(--green, #22c55e)');
+      } catch (err) {
+        console.error('[VoxGenesis] captureVoice error:', err);
+        this.setStatus('Capture failed: ' + err.message, 'Error', 'var(--red, #ef4444)');
+      }
+    }
+
+    async handleAudioUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        e.target.value = '';
+        this.setStatus(`Decoding "${file.name}"...`, 'Loading', 'var(--cyan, #00d4ff)');
+        try {
+            const engine = window.voxEngine;
+            const audioCtx = engine?.ctx;
+            if (!audioCtx) throw new Error('Audio engine not initialized');
+            
+            // Ensure audio context is resumed (required for audio processing in some browsers)
+            if (audioCtx.state === 'suspended') {
+                await audioCtx.resume();
+            }
+            
+            const arrayBuffer = await file.arrayBuffer();
+            const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+            this.state._sourceBuffer = audioBuffer;
+            // Compute timbre descriptor (average magnitude spectrum)
+            this.state.timbreDescriptor = await this.computeTimbreDescriptor(audioBuffer);
+            await this.analyzeAudio(audioBuffer);
+            const nameInput = this.shadowRoot.getElementById('modelNameInput');
+            if (nameInput && !nameInput.value) nameInput.value = file.name.replace(/\.[^.]+$/, '');
+            this.setStatus(`"${file.name}" loaded (${audioBuffer.duration.toFixed(1)}s, ${audioBuffer.numberOfChannels}ch). Timbre descriptor extracted. Click Capture & Save to create model.`, 'Audio Loaded', 'var(--green, #22c55e)');
+        } catch (err) {
+            console.error('[VoxGenesis] upload decode error:', err);
+            this.setStatus('Failed to decode audio: ' + err.message, 'Error', 'var(--red, #ef4444)');
+        }
+    }
+
+    // Simple timbre descriptor: average magnitude of the STFT (using a Hann window, 1024â€‘pt FFT, hop 256)
+    async computeTimbreDescriptor(audioBuffer) {
+        const channelData = audioBuffer.getChannelData(0); // mono or first channel
+        const fftSize = 1024;
+        const hop = 256;
+        // Hann window
+        const window = new Float32Array(fftSize);
+        for (let i = 0; i < fftSize; i++) {
+            window[i] = 0.5 * (1 - Math.cos(2 * Math.PI * i / (fftSize - 1)));
+        }
+        const spectrumSum = new Float32Array(fftSize / 2).fill(0);
+        let frames = 0;
+        for (let offset = 0; offset <= channelData.length - fftSize; offset += hop) {
+            // windowed frame
+            const real = new Float32Array(fftSize);
+            const imag = new Float32Array(fftSize);
+            for (let i = 0; i < fftSize; i++) {
+                const sample = channelData[offset + i];
+                real[i] = sample * window[i];
+            }
+            // Naive DFT (only need magnitude for first half)
+            for (let k = 0; k < fftSize / 2; k++) {
+                let re = 0, im = 0;
+                for (let n = 0; n < fftSize; n++) {
+                    const ang = 2 * Math.PI * k * n / fftSize;
+                    re += real[n] * Math.cos(ang) + imag[n] * Math.sin(ang);
+                    im += -real[n] * Math.sin(ang) + imag[n] * Math.cos(ang);
+                }
+                spectrumSum[k] += Math.hypot(re, im); // sqrt(re*re + im*im)
+            }
+            frames++;
+        }
+        if (frames === 0) return new Float32Array(0);
+        const avgMag = new Float32Array(spectrumSum.length);
+        for (let i = 0; i < spectrumSum.length; i++) {
+            avgMag[i] = spectrumSum[i] / frames;
+        }
+        // Convert to log scale for better dynamic range
+        const logMag = new Float32Array(avgMag.length);
+        for (let i = 0; i < avgMag.length; i++) {
+            logMag[i] = Math.log(avgMag[i] + 1e-10);
+        }
+        return logMag;
+    }
+
+    clearClone() {
+      this.state.hasClone = false;
+      this.state.selectedModelId = null;
+      this.shadowRoot.getElementById('modelNameInput').value = '';
+      this.renderModelList();
+      this.setStatus('Voice print cleared.', 'Standby', 'var(--text-dimmer, #5c5c80)');
+    }
+
+    loadSelectedModel() {
+      if (!this.state.selectedModelId) {
+        this.setStatus('No model selected. Click a saved model first.', 'Error', 'var(--red, #ef4444)');
+        return;
+      }
+      const model = this.getStoredModels().find(m => m.id === this.state.selectedModelId);
+      if (!model) {
+        this.setStatus('Selected model not found.', 'Error', 'var(--red, #ef4444)');
+        return;
+      }
+
+      this.state.hasClone = true;
+      if (model.settings) {
+        this.state.cloneIntensity = model.settings.cloneIntensity ?? 75;
+        this.state.formantPreserve = model.settings.formantPreserve ?? 60;
+        this.state.latencyBuffer = model.settings.latencyBuffer ?? 5000;
+      }
+
+      this.shadowRoot.getElementById('modelNameInput').value = model.name;
+      this.syncSliders();
+      this.renderModelList();
+      this.setStatus(`Loaded model: ${model.name}`, 'Model Loaded', 'var(--cyan, #00d4ff)');
+    }
+
+    async installModelPack() {
+      if (!window.titan?.voxGenesis?.installModelPack) {
+        this.setStatus('Model pack install is only available in the desktop app.', 'Desktop Only', 'var(--orange, #f59e0b)');
+        return;
+      }
+      this.setStatus('Select a VoxGenesis ONNX model pack folder...', 'Installing', 'var(--cyan, #00d4ff)');
+      try {
+        const result = await window.titan.voxGenesis.installModelPack();
+        if (result?.canceled) {
+          this.setStatus('Model pack install canceled.', 'Standby', 'var(--text-dimmer, #5c5c80)');
+          return;
+        }
+        if (!result?.ok) {
+          const missing = result?.validation?.files?.filter((file) => !file.ok).map((file) => `${file.name}: ${file.error}`).join('; ');
+          this.setStatus('Model pack invalid: ' + (missing || result?.error || 'missing required ONNX files'), 'Invalid Pack', 'var(--red, #ef4444)');
+          return;
+        }
+        if (window.VoxGenesisModelAdapter) {
+          window.VoxGenesisModelAdapter.ready = false;
+          window.VoxGenesisModelAdapter.installState = 'not-loaded';
+          await window.VoxGenesisModelAdapter.init();
+        }
+        if (window.voxEngine?.init) await window.voxEngine.init(window.voxEngine.ctx || window.audioContext);
+        const status = window.VoxGenesisModelAdapter?.status?.();
+        this.setStatus(status?.ready ? 'VoxGenesis singing model installed and ready.' : 'Model files installed. Restart if the adapter is not ready yet.', status?.ready ? 'Model Ready' : 'Installed', status?.ready ? 'var(--green, #22c55e)' : 'var(--orange, #f59e0b)');
+      } catch (err) {
+        console.error('[VoxGenesis] model pack install failed:', err);
+        this.setStatus('Model pack install failed: ' + (err.message || err), 'Error', 'var(--red, #ef4444)');
+      }
+    }
+    deleteSelectedModel() {
+      if (!this.state.selectedModelId) {
+        this.setStatus('No model selected to delete.', 'Error', 'var(--red, #ef4444)');
+        return;
+      }
+      const models = this.getStoredModels().filter(m => m.id !== this.state.selectedModelId);
+      this.saveStoredModels(models);
+      this.state.selectedModelId = null;
+      this.state.hasClone = models.length > 0;
+      this.renderModelList();
+      this.setStatus('Model deleted.', 'Standby', 'var(--text-dimmer, #5c5c80)');
+    }
+
+    syncSliders() {
+      const ids = ['cloneIntensity', 'formantPreserve', 'latencyBuffer', 'pitchCorrection', 'naturalness', 'sibilance', 'synthesisAmount', 'synthesisBlend', 'timbreShift'];
+      const suffixes = ['%', '%', 'ms', '%', '%', '%', '%', '%', ''];
+      ids.forEach((id, i) => {
+        const input = this.shadowRoot.getElementById(id);
+        const value = this.shadowRoot.getElementById(id + 'Value');
+        if (input) input.value = this.state[id];
+        if (value) value.textContent = this.state[id] + suffixes[i];
+      });
+    }
+
+    renderModelList() {
+      const list = this.shadowRoot.getElementById('modelList');
+      const models = this.getStoredModels();
+      if (!models.length) {
+        list.innerHTML = '<div class="model-empty">No voice prints saved yet.</div>';
+        return;
+      }
+      list.innerHTML = models.map(m => `
+        <div class="model-item ${m.id === this.state.selectedModelId ? 'active' : ''}" data-id="${m.id}">
+          <div>
+            <div class="model-name">${this.escapeHtml(m.name)}</div>
+            <div class="model-meta">${new Date(m.createdAt).toLocaleDateString()} Â· ${m.fingerprint || 'no fingerprint'}</div>
+          </div>
+          <button class="model-delete" data-id="${m.id}" title="Delete model">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `).join('');
+
+      list.querySelectorAll('.model-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          if (e.target.closest('.model-delete')) return;
+          this.state.selectedModelId = item.dataset.id;
+          this.renderModelList();
+        });
+      });
+
+      list.querySelectorAll('.model-delete').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.state.selectedModelId = btn.dataset.id;
+          this.deleteSelectedModel();
+        });
+      });
+    }
+
+    escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    _fallbackEmbedding(features) {
+      const s = features;
+      const vec = [
+        s.avgEnergy || 0,
+        s.energyVariance || 0,
+        s.dynamicRange || 0,
+        s.avgSpectralCentroid || 0,
+        s.avgSpectralPeak || 0,
+        s.avgZeroCrossingRate || 0,
+        s.duration || 0
+      ];
+      const norm = Math.sqrt(vec.reduce((a, b) => a + b * b, 0)) || 1;
+      return vec.map(v => v / norm);
+    }
+
+    processTake() {
+      if (!this.state.hasClone) {
+        this.setStatus('No voice print available. Capture or load a voice print first.', 'Error', 'var(--red, #ef4444)');
+        return;
+      }
+      if (!this.state.isVocal) {
+        this.setStatus('Current audio is not vocal. Voice conversion unavailable.', 'Error', 'var(--red, #ef4444)');
+        return;
+      }
+      if (this.state.bypass) {
+        this.setStatus('Bypassed â€” enable processing to run.', 'Bypassed', 'var(--orange, #f59e0b)');
+        return;
+      }
+      this.state.processing = true;
+      const features = this.state.audioFeatures || {};
+      const estimatedDuration = features.duration ? Math.min(features.duration * 1000, 8000) : 3000;
+      this.setStatus(`Rendering vocal take (${features.duration ? features.duration.toFixed(1) + 's' : 'unknown duration'})...`, 'Rendering', 'var(--accent, #7c5cff)');
+
+      try {
+        const engine = window.voxEngine;
+        const model = engine?.getModel(this.state.selectedModelId);
+        if (!model || !engine) throw new Error('Voice model not found');
+
+        const params = {
+          pitchShift: this.state.pitchCorrection - 50,
+          formantShift: this.state.formantPreserve - 50,
+          intensity: this.state.cloneIntensity / 100,
+          blend: this.state.synthesisBlend / 100,
+          timbreShift: this.state.timbreShift,
+          sourceBuffer: this.state._sourceBuffer || model.buffer,
+          duration: features.duration || 3
+        };
+
+        const hasRealModel = engine.hasSingingModel && engine.hasSingingModel();
+        const renderPromise = hasRealModel
+          ? engine.synthesize(this.state.selectedModelId, params)
+          : engine.renderLocalPreview(this.state.selectedModelId, params);
+
+        renderPromise.then((audioBuffer) => {
+          this.state.processing = false;
+          const modelReady = engine.hasSingingModel && engine.hasSingingModel();
+          this.setStatus(
+            modelReady
+              ? `Genesis Complete - ${audioBuffer.duration.toFixed(1)}s rendered by the installed singing voice model.`
+              : `Local preview rendered (${audioBuffer.duration.toFixed(1)}s). Add VoxGenesis ONNX model assets for true clone-to-singing output.`,
+            modelReady ? 'Complete' : 'Preview',
+            modelReady ? 'var(--green, #22c55e)' : 'var(--orange, #f59e0b)'
+          );
+
+          const playBtn = this.shadowRoot.getElementById('processTakeBtn');
+          if (playBtn) {
+            playBtn.dataset.bufferReady = 'true';
+            playBtn.dataset.sampleRate = String(audioBuffer.sampleRate);
+            playBtn.dataset.channels = String(audioBuffer.numberOfChannels);
+            playBtn.dataset.length = String(audioBuffer.length);
+          }
+
+          if (this._onSynthesized) this._onSynthesized(audioBuffer);
+        }).catch((err) => {
+          console.error('[VoxGenesis] render failed:', err);
+          this.state.processing = false;
+          this.setStatus('Render failed: ' + err.message, 'Error', 'var(--red, #ef4444)');
+        });
+      } catch (err) {
+        this.state.processing = false;
+        this.setStatus('Synthesis error: ' + err.message, 'Error', 'var(--red, #ef4444)');
+      }
+    }
+
+    playSynthesized() {
+      const playBtn = this.shadowRoot.getElementById('processTakeBtn');
+      if (!playBtn || playBtn.dataset.bufferReady !== 'true') {
+        this.setStatus('No rendered audio available. Run Synthesize Take first.', 'Error', 'var(--red, #ef4444)');
+        return;
+      }
+      this.setStatus('Playing rendered output...', 'Playing', 'var(--cyan, #00d4ff)');
+    }
+
+    toggleBypass() {
+      this.state.bypass = !this.state.bypass;
+      const btn = this.shadowRoot.getElementById('bypassBtn');
+      btn.innerHTML = this.state.bypass
+        ? '<i class="fas fa-check"></i> Bypassed'
+        : '<i class="fas fa-power-off"></i> Bypass';
+      this.setStatus(
+        this.state.bypass ? 'Bypass active â€” dry vocal only.' : 'Processing enabled.',
+        this.state.bypass ? 'Bypassed' : 'Ready',
+        this.state.bypass ? 'var(--orange, #f59e0b)' : 'var(--green, #22c55e)'
+      );
+    }
+
+    setStatus(text, badge, color) {
+      this.shadowRoot.getElementById('vgStatusText').textContent = text;
+      const badgeEl = this.shadowRoot.getElementById('vgStatusBadge');
+      badgeEl.textContent = badge;
+      badgeEl.style.color = color;
+      badgeEl.style.borderColor = color;
+      badgeEl.style.background = color.replace(')', ', 0.15)').replace('rgb', 'rgba');
+    }
+
+    startMeterAnimation() {
+      const meters = this.shadowRoot.getElementById('vgMeters');
+      if (!meters) return;
+      const bars = meters.querySelectorAll('.vg-bar');
+
+      const updateFromFeatures = () => {
+        const features = this.state.audioFeatures;
+        if (!features) {
+          bars.forEach(bar => {
+            const h = Math.floor(Math.random() * 10 + 2);
+            bar.style.height = h + '%';
+          });
+          return;
+        }
+        const energy = Math.min(1, features.avgEnergy * 1000);
+        const variation = features.energyVariance ? Math.min(0.3, features.energyVariance * 100) : 0.1;
+        bars.forEach((bar, idx) => {
+          const base = energy * 100;
+          const variationOffset = Math.sin(idx * 1.3 + Date.now() / 500) * variation * 100;
+          const h = Math.max(2, Math.min(100, base + variationOffset));
+          bar.style.height = h + '%';
+        });
+      };
+
+      setInterval(updateFromFeatures, 100);
+    }
+  }
+
+  if (!customElements.get('vox-genesis-ui')) {
+    customElements.define('vox-genesis-ui', VoxGenesisUI);
+  }
+})();
+</script>
+
+</body>
+</html>
+

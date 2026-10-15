@@ -1,0 +1,294 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Titan 7 Pro - PS Teleprompterâ„¢</title>
+    <link rel="icon" href="icon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="teleprompter-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="teleprompter-body">
+    <!-- Connection Status Bar -->
+    <div class="connection-bar" id="connectionBar">
+        <a href="index.html" class="back-to-daw" id="btnBackToDAW">
+            <i class="fas fa-arrow-left"></i> Back to DAW
+        </a>
+        <div class="connection-status">
+            <i class="fas fa-circle status-dot connected"></i>
+            <span id="connectionText">Local session ready</span>
+        </div>
+        <div class="latency-indicator">
+            <i class="fas fa-bolt"></i>
+            <span id="latencyValue">--</span>
+            <span class="latency-label">Global Sync</span>
+        </div>
+        <div class="collaborators">
+            <span class="collaborator-count" id="collaboratorCount">1</span>
+            <span>Active Users</span>
+            <div class="collaborator-avatars" id="collaboratorAvatars">
+                <div class="avatar" title="Host">HO</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Teleprompter Display -->
+    <div class="teleprompter-container" id="teleprompterContainer">
+        <!-- Lyrics Display Area -->
+        <div class="lyrics-display" id="lyricsDisplay">
+            <div class="lyrics-container" id="lyricsContainer"></div>
+        </div>
+
+        <!-- Playback Controls Overlay -->
+        <div class="playback-overlay" id="playbackOverlay">
+            <div class="transport-controls-large">
+                <button class="transport-btn-large" id="tpRewind">
+                    <i class="fas fa-step-backward"></i>
+                </button>
+                <button class="transport-btn-large play" id="tpPlay">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button class="transport-btn-large" id="tpStop">
+                    <i class="fas fa-stop"></i>
+                </button>
+                <button class="transport-btn-large record" id="tpRecord">
+                    <i class="fas fa-circle"></i>
+                </button>
+            </div>
+            <div class="time-display-large" id="tpTimeDisplay">
+                00:00:00
+            </div>
+            <div class="track-name-display" id="trackNameDisplay">
+                No audio loaded
+            </div>
+            <div class="scroll-speed-control">
+                <label>Scroll Speed</label>
+                <input type="range" min="1" max="10" value="5" id="scrollSpeed">
+                <span id="scrollSpeedValue">5</span>
+            </div>
+            <div class="volume-control">
+                <label>Volume</label>
+                <input type="range" min="0" max="1" step="0.01" value="1" id="masterVolume">
+            </div>
+        </div>
+    </div>
+
+    <!-- Control Panel (Collapsible) -->
+    <div class="control-panel" id="controlPanel">
+        <div class="panel-toggle" id="panelToggle">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        
+        <div class="panel-content">
+            <!-- Tabs -->
+            <div class="panel-tabs">
+                <button class="panel-tab active" data-tab="lyrics">
+                    <i class="fas fa-music"></i> Lyrics
+                </button>
+                <button class="panel-tab" data-tab="cast">
+                    <i class="fas fa-broadcast-tower"></i> Cast
+                </button>
+                <button class="panel-tab" data-tab="collab">
+                    <i class="fas fa-users"></i> Collaboration
+                </button>
+                <button class="panel-tab" data-tab="bot">
+                    <i class="fas fa-robot"></i> AI Bot
+                </button>
+            </div>
+
+            <!-- Lyrics Tab -->
+            <div class="panel-tab-content active" id="lyricsTab">
+                <div class="lyrics-editor-section">
+                    <div class="section-header">
+                        <h3>Lyrics Editor</h3>
+                        <div class="section-actions">
+                            <button class="btn-small" id="syncLyrics">
+                                <i class="fas fa-sync"></i> Sync to Audio
+                            </button>
+                            <button class="btn-small" id="autoScroll">
+                                <i class="fas fa-font"></i> Auto-Scroll
+                            </button>
+                        </div>
+                    </div>
+                            <input type="file" id="audioFileInput" accept="audio/*" class="audio-file-input">
+                            <audio id="audioPlayer" controls class="audio-player" style="display:none;"></audio>
+                            <textarea class="lyrics-input" id="lyricsInput" placeholder="Enter lyrics (one line per verse)"></textarea>
+                    <div class="lyrics-timing-controls">
+                        <label>BPM Reference</label>
+                        <input type="number" value="120" id="lyricsBPM">
+                        <label>Time Signature</label>
+                        <select id="lyricsTimeSig">
+                            <option>4/4</option>
+                            <option>3/4</option>
+                            <option>6/8</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cast Tab -->
+            <div class="panel-tab-content" id="castTab">
+                <div class="cast-section">
+                    <div class="section-header">
+                        <h3>Cast to Mirror / Peer</h3>
+                        <button class="btn-small primary" id="scanDevices">
+                            <i class="fas fa-search"></i> Scan
+                        </button>
+                    </div>
+                    
+                    <div class="available-devices" id="availableDevices"></div>
+
+                    <div class="cast-settings">
+                        <h4>Cast Settings</h4>
+                        <div class="setting-row">
+                            <label>Sync Mode</label>
+                            <select id="syncMode">
+                                <option value="zero">Local Mirror / Peer Sync</option>
+                                <option value="server">Peer Session Fallback</option>
+                                <option value="hybrid">Local + Peer</option>
+                            </select>
+                        </div>
+                        <div class="setting-row">
+                            <label>Quality</label>
+                            <select id="castQuality">
+                                <option value="4k">Large Mirror Text</option>
+                                <option value="1080" selected>Standard Mirror Text</option>
+                                <option value="720">Compact Mirror Text</option>
+                            </select>
+                        </div>
+                        <div class="setting-row">
+                            <label>
+                                <input type="checkbox" checked id="mirrorDisplay">
+                                Mirror Display
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <label>
+                                <input type="checkbox" checked id="showControls">
+                                Show Controls on Mirror
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collaboration Tab -->
+            <div class="panel-tab-content" id="collabTab">
+                <div class="collab-section">
+                    <div class="section-header">
+                        <h3>Global Collaboration</h3>
+                        <div class="collab-status">
+                            <span class="status-indicator online"></span>
+                            <span>Session Active</span>
+                        </div>
+                    </div>
+
+                    <div class="session-info">
+                        <div class="info-row">
+                            <span class="info-label">Session ID:</span>
+                            <span class="info-value" id="sessionIdValue">--</span>
+                            <button class="btn-icon" id="copySessionId">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Region:</span>
+                            <span class="info-value" id="regionValue">--</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Sync Protocol:</span>
+                            <span class="info-value" id="protocolValue">--</span>
+                        </div>
+                    </div>
+
+                    <div class="participants-list">
+                        <h4>Active Participants</h4>
+                        <div id="participantsList"></div>
+                    </div>
+
+                    <div class="collab-controls">
+                        <button class="btn-primary" id="inviteUser">
+                            <i class="fas fa-user-plus"></i> Copy Invite Link
+                        </button>
+                        <button class="btn-secondary" id="startRecording">
+                            <i class="fas fa-record-vinyl"></i> Start Solo Run
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bot Tab -->
+            <div class="panel-tab-content" id="botTab">
+                <div class="bot-section">
+                    <div class="bot-header">
+                        <div class="bot-avatar-large">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="bot-info">
+                            <h3>PS Teleprompter Bot</h3>
+                            <span class="bot-status online">Online - Ready</span>
+                        </div>
+                    </div>
+
+                    <div class="bot-messages" id="botMessages">
+                        <div class="bot-message">
+                            <div class="message-bubble bot">
+                                <p>Welcome. This session can:</p>
+                                <ul>
+                                    <li>Sync lyrics from loaded audio and BPM</li>
+                                    <li>Cast to mirror windows and peer tabs</li>
+                                    <li>Share the active collaboration link</li>
+                                    <li>Report the measured session latency</li>
+                                </ul>
+                                <p>What would you like to do?</p>
+                            </div>
+                            <span class="message-time">Just now</span>
+                        </div>
+                    </div>
+
+                    <div class="bot-quick-actions">
+                        <button class="quick-action" data-action="sync">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>Auto-Sync Lyrics</span>
+                        </button>
+                        <button class="quick-action" data-action="cast">
+                            <i class="fas fa-broadcast-tower"></i>
+                            <span>Cast Mirrors</span>
+                        </button>
+                        <button class="quick-action" data-action="collab">
+                            <i class="fas fa-users"></i>
+                            <span>Start Collab</span>
+                        </button>
+                        <button class="quick-action" data-action="optimize">
+                            <i class="fas fa-bolt"></i>
+                            <span>Optimize Latency</span>
+                        </button>
+                    </div>
+
+                    <div class="bot-input-area">
+                        <input type="text" id="botInput" placeholder="Ask for help or enter a command">
+                        <button id="botSend">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Driver Status Indicator -->
+    <div class="driver-status" id="driverStatus">
+        <i class="fas fa-microchip"></i>
+        <span>PS Driver: Active</span>
+        <span class="driver-latency">--</span>
+    </div>
+
+    <script src="titan-driver-runtime.js"></script>
+        <script src="teleprompter-driver.js"></script>
+    <script src="teleprompter-bot.js"></script>
+    <script src="teleprompter-app.js"></script>
+</body>
+</html>
+
+

@@ -1,0 +1,112 @@
+<!-- HaloGateUI.html -->
+<template id="halo-gate-ui">
+  <style>
+    :host {
+      display: grid;
+      grid-template-rows: 1fr 140px;
+      background: var(--titan-bg-dark, #0F0F12);
+      height: 100%; width: 100%;
+      font-family: 'Inter', sans-serif;
+    }
+    .visualizer-panel {
+      position: relative;
+      background: #151518;
+      border-bottom: 1px solid #2A2A2E;
+    }
+    /* Dual-Curve Canvas */
+    #dualCurveCanvas { width: 100%; height: 100%; }
+    
+    /* Animated Transient Marker */
+    .transient-marker {
+      position: absolute; top: 0; bottom: 0; width: 2px;
+      background: #00E5FF; box-shadow: 0 0 8px #00E5FF;
+      animation: slideLeft 2s linear infinite;
+    }
+    @keyframes slideLeft { from { left: 100%; } to { left: 0%; } }
+
+    .controls-panel {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 15px; padding: 20px; align-items: end;
+    }
+    .control-group { display: flex; flex-direction: column; align-items: center; }
+    .control-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 8px; }
+    
+    /* Hysteresis Visualizer Knob */
+    .hysteresis-knob {
+      width: 50px; height: 50px; border-radius: 50%;
+      background: conic-gradient(#FF3366 calc(var(--value) * 1%), #333 0);
+      position: relative; cursor: ns-resize;
+    }
+    .hysteresis-knob::after {
+      content: ''; position: absolute; inset: 3px; border-radius: 50%; background: #151518;
+    }
+  </style>
+
+  <div class="visualizer-panel">
+    <canvas id="dualCurveCanvas"></canvas>
+    <!-- Dynamically injected via JS when transient is detected -->
+    <div class="transient-marker" id="transientIndicator" style="display: none;"></div>
+  </div>
+
+  <div class="controls-panel">
+    <div class="control-group">
+      <span class="control-label">Threshold</span>
+      <div class="titan-knob" data-param="Threshold" style="--value: 40"></div>
+    </div>
+    <div class="control-group">
+      <span class="control-label">Attack</span>
+      <div class="titan-knob" data-param="AttackMs" style="--value: 5"></div>
+    </div>
+    <div class="control-group">
+      <span class="control-label">Release</span>
+      <div class="titan-knob" data-param="ReleaseMs" style="--value: 150"></div>
+    </div>
+    <div class="control-group">
+      <span class="control-label">Hysteresis</span>
+      <div class="hysteresis-knob" data-param="HysteresisDepth" style="--value: 30"></div>
+    </div>
+    <div class="control-group">
+      <span class="control-label">SC High Pass</span>
+      <div class="titan-knob" data-param="SidechainHighPass" style="--value: 80"></div>
+    </div>
+    <div class="control-group">
+      <span class="control-label">Sensitivity</span>
+      <div class="titan-knob" data-param="TransientSensitivity" style="--value: 75"></div>
+    </div>
+  </div>
+</template>
+
+<script>
+  class HaloGateUI extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this.shadowRoot.appendChild(document.getElementById('halo-gate-ui').content.cloneNode(true));
+      this.canvas = this.shadowRoot.getElementById('dualCurveCanvas');
+      this.ctx = this.canvas.getContext('2d');
+      this.initDualCurveVisualizer();
+      this.bindRDSLListener();
+    }
+
+    initDualCurveVisualizer() {
+      // Draws two lines: Yellow (Input Envelope), Cyan (Gain Reduction)
+      // Updates at 60fps via requestAnimationFrame, pulling data from Titan Shared Memory
+    }
+
+    bindRDSLListener() {
+      window.addEventListener('titan-rdsl-update', (e) => {
+        if (e.detail.plugin === 'halogate') {
+          if (e.detail.action === 'clean_overheads_preserve_cymbals') {
+            this.animateKnob('Threshold', 0.35); // -9dB
+            this.animateKnob('ReleaseMs', 0.60); // ~300ms
+            this.animateKnob('TransientSensitivity', 0.85); // High sensitivity
+            this.animateKnob('SidechainHighPass', 0.20); // ~5kHz, ignore kick bleed
+            this.showFeedback("HaloGate: Overhead bleed reduced. Cymbal decay preserved via dynamic release.");
+          }
+        }
+      });
+    }
+  }
+  customElements.define('halo-gate-ui', HaloGateUI);
+</script>

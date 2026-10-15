@@ -1,0 +1,63 @@
+{
+  "name": "titan-7-pro",
+  "productName": "Titan 7 Pro",
+  "version": "2.0.3",
+  "description": "Titan 7 Pro - GPU-Native Digital Audio Workstation",
+  "author": "Raymond Flanary <dirtroadchairman@hotmail.com>",
+  "private": true,
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win",
+    "dist:portable": "electron-builder --win portable"
+  },
+  "dependencies": {
+    "onnxruntime-web": "^1.26.0"
+  },
+  "devDependencies": {
+    "electron": "^44.7.2",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.redemptionroad.titan7pro",
+    "productName": "Titan 7 Pro",
+    "copyright": "Copyright (c) Redemption Road Music Group",
+    "asar": false,
+    "directories": {
+      "output": "dist",
+      "buildResources": "."
+    },
+    "files": [
+      "**/*",
+      "!dist/**",
+      "!.git/**",
+      "!.qwen/**",
+      "!node_modules/.cache/**",
+      "!**/*.map",
+      "!**/*.ts",
+      "!node_modules/onnxruntime-web/**/*.map"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "icon.ico",
+      "artifactName": "Titan7Pro-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowElevation": true,
+      "shortcutName": "Titan 7 Pro",
+      "include": "electron/installer.nsh",
+      "artifactName": "Titan7Pro-Setup-${version}.${ext}",
+      "uninstallDisplayName": "Titan 7 Pro"
+    }
+  }
+}

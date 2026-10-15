@@ -1,0 +1,775 @@
+/* RDSL Interface Styles — matching DAW color scheme */
+.rdsl-body {
+    background: var(--bg-deep);
+    color: var(--text);
+    overflow: hidden;
+    font-family: var(--font);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+.rdsl-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    height: 56px;
+    background: rgba(12, 12, 24, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.rdsl-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rdsl-logo i {
+    font-size: 28px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.rdsl-brand h1 {
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.rdsl-brand span {
+    font-size: 10px;
+    color: var(--text-dimmer);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: block;
+}
+
+.rdsl-nav {
+    display: flex;
+    gap: 6px;
+}
+
+/* ── Nav Buttons ────────────────────────────────────────── */
+.nav-btn {
+    padding: 8px 16px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition);
+    font-family: var(--font);
+}
+
+.nav-btn:hover {
+    background: var(--bg-elevated);
+    color: var(--text);
+    border-color: var(--accent);
+}
+
+.nav-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
+}
+
+/* ── Main Layout ────────────────────────────────────────── */
+.rdsl-main {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    padding: 12px;
+    gap: 12px;
+}
+
+/* ── Panels ─────────────────────────────────────────────── */
+.rdsl-panel {
+    background: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.rdsl-panel h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+    flex-shrink: 0;
+}
+
+.rdsl-panel h2 i {
+    color: var(--accent);
+}
+
+.panel-description {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    flex-shrink: 0;
+}
+
+/* ── Section Views ──────────────────────────────────────── */
+.natural-section {
+    display: flex;
+    width: 100%;
+    gap: 12px;
+}
+
+/* ── Natural Language Panel ─────────────────────────────── */
+.natural-language-panel {
+    width: 320px;
+    flex-shrink: 0;
+}
+
+.nl-input-container {
+    margin-bottom: 12px;
+    flex-shrink: 0;
+}
+
+.nl-input-container textarea {
+    width: 100%;
+    height: 100px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    font-family: var(--font);
+    font-size: 13px;
+    line-height: 1.5;
+    resize: vertical;
+    margin-bottom: 8px;
+}
+
+.nl-input-container textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.nl-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-primary {
+    padding: 8px 16px;
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition);
+    font-family: var(--font);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.btn-secondary {
+    padding: 8px 16px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition);
+    font-family: var(--font);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-card);
+    color: var(--text);
+    border-color: var(--accent);
+}
+
+/* ── Suggestions ────────────────────────────────────────── */
+.nl-suggestions {
+    margin-bottom: 12px;
+    flex-shrink: 0;
+}
+
+.nl-suggestions h3 {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.suggestion-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.suggestion-chip {
+    padding: 6px 14px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: var(--transition);
+    font-family: var(--font);
+}
+
+.suggestion-chip:hover {
+    background: var(--bg-card);
+    color: var(--text);
+    border-color: var(--accent);
+}
+
+.suggestion-chip i {
+    font-size: 11px;
+}
+
+/* ── RDSL Bot Panel ─────────────────────────────────────── */
+.rdsl-bot-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-elevated);
+    border-radius: var(--radius);
+    padding: 12px;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.bot-header-small {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.bot-avatar-small {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--cyan) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: #fff;
+}
+
+.bot-info-small h4 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.bot-status {
+    font-size: 10px;
+}
+
+.bot-status.online {
+    color: var(--green);
+}
+
+.bot-messages-small {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.bot-message-small {
+    background: var(--bg-card);
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--accent);
+}
+
+.bot-message-small p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-dim);
+}
+
+/* ── Code Editor Panel ──────────────────────────────────── */
+.code-editor-panel {
+    flex: 1;
+    min-width: 0;
+}
+
+.editor-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    background: var(--bg-elevated);
+    border-radius: var(--radius);
+    margin-bottom: 8px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.toolbar-group {
+    display: flex;
+    gap: 4px;
+}
+
+.toolbar-btn {
+    padding: 6px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: var(--transition);
+    font-family: var(--font);
+}
+
+.toolbar-btn:hover {
+    background: var(--bg-elevated);
+    color: var(--text);
+    border-color: var(--accent);
+}
+
+.toolbar-info {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--text-dimmer);
+    font-family: var(--mono);
+}
+
+.toolbar-info i {
+    color: var(--green);
+}
+
+/* ── Code Editor ────────────────────────────────────────── */
+.code-editor-container {
+    flex: 1;
+    display: flex;
+    background: var(--bg-deep);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 8px;
+    font-family: var(--mono);
+    border: 1px solid var(--border);
+    min-height: 0;
+}
+
+.line-numbers {
+    width: 44px;
+    background: var(--bg-surface);
+    color: var(--text-dimmer);
+    padding: 10px 8px;
+    text-align: right;
+    line-height: 1.6;
+    font-size: 13px;
+    user-select: none;
+    overflow: hidden;
+    border-right: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.code-editor {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    tab-size: 4;
+}
+
+.editor-tabs {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.editor-tab {
+    padding: 6px 14px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    transition: var(--transition);
+    font-family: var(--font);
+}
+
+.editor-tab.active {
+    background: var(--bg-surface);
+    color: var(--text);
+    border-color: var(--accent);
+}
+
+.editor-panel-content {
+    flex: 1;
+    background: var(--bg-deep);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    overflow-y: auto;
+    font-family: var(--mono);
+    font-size: 12px;
+    border: 1px solid var(--border);
+    min-height: 60px;
+}
+
+.output-content {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.output-line {
+    padding: 3px 8px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.output-line.success {
+    background: rgba(34, 197, 94, 0.08);
+    color: var(--green);
+}
+
+.output-line.info {
+    background: rgba(0, 212, 255, 0.08);
+    color: var(--cyan);
+}
+
+.output-line.error {
+    background: rgba(239, 68, 68, 0.08);
+    color: var(--red);
+}
+
+/* ── Preview Panel ──────────────────────────────────────── */
+.preview-panel {
+    width: 300px;
+    flex-shrink: 0;
+}
+
+.preview-container {
+    flex: 1;
+    background: var(--bg-elevated);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 160px;
+    border: 1px dashed var(--border);
+}
+
+.preview-placeholder {
+    text-align: center;
+    color: var(--text-dimmer);
+}
+
+.preview-placeholder i {
+    font-size: 40px;
+    margin-bottom: 10px;
+    opacity: 0.4;
+}
+
+.preview-placeholder p {
+    font-size: 12px;
+}
+
+/* ── Driver Status ──────────────────────────────────────── */
+.driver-status-panel {
+    background: var(--bg-elevated);
+    border-radius: var(--radius);
+    padding: 12px;
+    margin-bottom: 12px;
+    flex-shrink: 0;
+}
+
+.driver-status-panel h3 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+}
+
+.driver-status-panel h3 i {
+    color: var(--cyan);
+}
+
+.driver-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.metric {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.metric-label {
+    font-size: 10px;
+    color: var(--text-dimmer);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metric-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    font-family: var(--mono);
+}
+
+.metric-value.active {
+    color: var(--green);
+}
+
+/* ── Component Controls ─────────────────────────────────── */
+.component-controls {
+    margin-bottom: 12px;
+    flex-shrink: 0;
+}
+
+.component-controls h3 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+}
+
+.control-group {
+    margin-bottom: 8px;
+}
+
+.control-group label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+}
+
+.control-group input[type="number"],
+.control-group select {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-family: var(--font);
+}
+
+.control-group input[type="checkbox"] {
+    margin-right: 6px;
+    accent-color: var(--accent);
+}
+
+/* ── Export Options ─────────────────────────────────────── */
+.export-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.full-width {
+    width: 100%;
+}
+
+/* ── Syntax Highlighting ────────────────────────────────── */
+.rdsl-keyword { color: #cba6f7; }
+.rdsl-function { color: #89b4fa; }
+.rdsl-number { color: #fab387; }
+.rdsl-string { color: #a6e3a1; }
+.rdsl-comment { color: var(--text-dimmer); font-style: italic; }
+.rdsl-operator { color: #f38ba8; }
+.rdsl-parameter { color: #f9e2af; }
+
+/* ── Editor Section (full-width) ────────────────────────── */
+#editorSection {
+    display: none;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+}
+
+#editorSection .rdsl-panel {
+    margin: 0;
+    height: 100%;
+}
+
+#editorSection .code-editor-container {
+    height: calc(100% - 100px);
+}
+
+/* ── Library Section ────────────────────────────────────── */
+.library-section {
+    display: none;
+    width: 100%;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.library-heading {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+}
+
+.library-heading i {
+    color: var(--accent);
+    margin-right: 8px;
+}
+
+.library-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 8px;
+}
+
+.library-card {
+    padding: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.library-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
+    background: var(--bg-hover);
+}
+
+.library-card h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.library-card p {
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+/* ── Auto-Complete Dropdown ─────────────────────────────── */
+.rdsl-autocomplete {
+    position: fixed;
+    z-index: 99999;
+    background: var(--bg-card);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 12px var(--accent-glow);
+    max-height: 260px;
+    overflow-y: auto;
+    min-width: 180px;
+    display: none;
+    font-family: var(--mono);
+    font-size: 12px;
+}
+
+.rdsl-autocomplete .ac-item {
+    padding: 6px 12px;
+    cursor: pointer;
+    color: var(--text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.1s;
+}
+
+.rdsl-autocomplete .ac-item:hover,
+.rdsl-autocomplete .ac-selected {
+    background: var(--bg-hover);
+    color: var(--text);
+}
+
+.rdsl-autocomplete .ac-snippet {
+    font-size: 9px;
+    color: var(--accent);
+    background: rgba(124, 92, 255, 0.15);
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin-left: 8px;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 1200px) {
+    .rdsl-main {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+    .natural-language-panel,
+    .preview-panel {
+        width: 100%;
+        max-height: 300px;
+    }
+}

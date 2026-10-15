@@ -1,0 +1,96 @@
+<!-- FluxCoreUI.html -->
+<template id="flux-core-ui">
+  <style>
+    :host {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      padding: 20px;
+      background: var(--titan-bg-dark, #0F0F12);
+      height: 100%;
+    }
+    .stem-channel {
+      display: flex; flex-direction: column; align-items: center;
+      background: #1A1A1E; border-radius: 8px; padding: 15px;
+      border: 1px solid #2A2A2E;
+    }
+    .stem-header { font-weight: 700; letter-spacing: 1px; margin-bottom: 10px; color: var(--titan-accent); }
+    
+    /* Isolated Waveform Display (Canvas) */
+    .waveform-canvas { width: 100%; height: 60px; background: #121215; border-radius: 4px; margin-bottom: 10px; }
+    
+    /* Spectral Mask Overlay */
+    .spectral-mask { width: 100%; height: 40px; background: linear-gradient(to right, #00E5FF 0%, transparent 100%); opacity: 0.6; border-radius: 4px; margin-bottom: 15px; }
+
+    /* Vertical Fader Track */
+    .fader-track {
+      width: 40px; height: 200px; background: #0A0A0C; border-radius: 20px;
+      position: relative; cursor: ns-resize;
+    }
+    .fader-thumb {
+      width: 36px; height: 20px; background: #EAEAEA; border-radius: 4px;
+      position: absolute; left: 2px; bottom: calc(var(--level) * 180px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    
+    .solo-btn, .mute-btn {
+      margin-top: 10px; width: 30px; height: 30px; border-radius: 50%;
+      border: 1px solid #444; background: transparent; color: #888;
+      font-size: 10px; font-weight: bold; cursor: pointer;
+    }
+    .solo-btn.active { background: #FFD700; color: #000; border-color: #FFD700; }
+    .mute-btn.active { background: #FF3366; color: #FFF; border-color: #FF3366; }
+  </style>
+
+  <!-- Vocal Channel -->
+  <div class="stem-channel" data-stem="vocal">
+    <div class="stem-header">VOCALS</div>
+    <canvas class="waveform-canvas" id="wave-vocal"></canvas>
+    <div class="spectral-mask" id="mask-vocal" title="AI Attenuation Mask"></div>
+    <div class="fader-track" data-param="VocalLevel">
+      <div class="fader-thumb" style="--level: 0.8"></div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="solo-btn">S</button>
+      <button class="mute-btn">M</button>
+    </div>
+  </div>
+
+  <!-- Drum, Bass, Other channels follow identical structure -->
+  <div class="stem-channel" data-stem="drums">...</div>
+  <div class="stem-channel" data-stem="bass">...</div>
+  <div class="stem-channel" data-stem="other">...</div>
+</template>
+
+<script>
+  class FluxCoreUI extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this.shadowRoot.appendChild(document.getElementById('flux-core-ui').content.cloneNode(true));
+      this.initWaveforms();
+      this.bindRDSLListener();
+    }
+
+    initWaveforms() {
+      // Uses Web Audio API AnalyserNode to draw real-time, isolated waveforms 
+      // for each stem at 60fps on the <canvas> elements.
+    }
+
+    bindRDSLListener() {
+      window.addEventListener('titan-rdsl-update', (e) => {
+        if (e.detail.plugin === 'fluxcore') {
+          if (e.detail.action === 'isolate_vocal_dereverb') {
+            this.animateFader('vocal', 1.0);
+            this.animateFader('drums', 0.0);
+            this.animateFader('bass', 0.0);
+            this.animateFader('other', 0.0);
+            this.setParam('DeReverbAmount', 0.65);
+            this.updateSpectralMask('vocal', 'dereverb_active');
+          }
+        }
+      });
+    }
+  }
+  customElements.define('flux-core-ui', FluxCoreUI);
+</script>

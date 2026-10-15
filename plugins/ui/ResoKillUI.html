@@ -1,0 +1,223 @@
+﻿<template id="reso-kill-ui">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  :host { display:block; width:100%; height:100%; background:radial-gradient(ellipse at 20% 0%, #141421 0%, #07070b 60%, #020204 100%); color:#f4f5fa; font-family:'Inter', -apple-system, sans-serif; overflow:hidden; }
+  .shell { display:flex; flex-direction:column; height:100%; position:relative; }
+  .shell::before { content:''; position:absolute; inset:0; background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='g' width='60' height='60' patternUnits='userSpaceOnUse'%3E%3Cpath d='M 60 0 L 0 0 0 60' fill='none' stroke='%23ffffff' stroke-opacity='0.03'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23g)'/%3E%3C/svg%3E"); pointer-events:none; opacity:.6; }
+  .header { display:flex; align-items:center; gap:18px; padding:0 28px; height:64px; border-bottom:1px solid rgba(255,255,255,.06); background:rgba(255,255,255,.02); backdrop-filter:blur(12px); position:relative; z-index:10; }
+  .brand { display:flex; flex-direction:column; }
+  .brand .town { font-size:11px; font-weight:800; letter-spacing:2.8px; color:#ff4d6d; text-transform:uppercase; }
+  .brand .type { font-size:9px; font-weight:600; letter-spacing:1.2px; color:#6e6e85; text-transform:uppercase; }
+  .tagline { font-size:10px; color:#6e6e85; letter-spacing:0.5px; margin-left:12px; }
+  .presetbar { display:flex; gap:8px; margin-left:auto; }
+  .preset { font-size:10px; font-weight:700; padding:7px 14px; border-radius:8px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); color:#8b8ba3; cursor:pointer; transition:all .15s; }
+  .preset:hover { border-color:rgba(255,255,255,.18); color:#d4d4e0; }
+  .preset.active { background:#ff4d6d; color:#050507; border-color:#ff4d6d; box-shadow:0 0 20px #ff4d6d50; }
+  .ai-tray { display:flex; gap:10px; align-items:center; margin-left:18px; }
+  .ai-btn { width:34px; height:34px; border-radius:8px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); color:#8b8ba3; display:grid; place-items:center; cursor:pointer; font-size:12px; font-weight:700; transition:all .15s; }
+  .ai-btn.on { color:#ff4d6d; border-color:#ff4d6d; box-shadow:0 0 16px #ff4d6d40; background:rgba(255,255,255,.07); }
+  .ai-panel { display:none; background:rgba(10,10,14,.95); border-bottom:1px solid rgba(255,255,255,.06); padding:14px 28px; position:relative; z-index:9; backdrop-filter:blur(16px); }
+  .ai-panel.open { display:block; }
+  .stage { flex:1; position:relative; min-height:0; z-index:1; }
+  canvas.main { position:absolute; inset:0; width:100%; height:100%; }
+  .readouts { position:absolute; top:22px; left:28px; display:flex; gap:14px; pointer-events:none; }
+  .readout-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:12px 18px; min-width:120px; backdrop-filter:blur(8px); }
+  .readout-label { font-size:8px; letter-spacing:1.4px; color:#6e6e85; text-transform:uppercase; margin-bottom:4px; }
+  .readout-value { font-size:20px; font-weight:800; font-variant-numeric:tabular-nums; color:#fff; text-shadow:0 0 18px #ff4d6d60; }
+  .footer { height:110px; background:rgba(255,255,255,.02); border-top:1px solid rgba(255,255,255,.06); backdrop-filter:blur(12px); display:grid; grid-template-columns: repeat(6, 1fr); align-items:center; padding:0 28px; gap:18px; position:relative; z-index:10; }
+  .control { display:flex; flex-direction:column; gap:8px; }
+  .control-top { display:flex; justify-content:space-between; align-items:center; }
+  .control-name { font-size:9px; letter-spacing:1.3px; color:#6e6e85; text-transform:uppercase; font-weight:600; }
+  .control-val { font-size:13px; font-weight:700; color:#fff; font-variant-numeric:tabular-nums; }
+  .slider-track { position:relative; height:6px; border-radius:3px; background:rgba(255,255,255,.06); overflow:hidden; }
+  .slider-track::before { content:''; position:absolute; left:0; top:0; bottom:0; width:var(--fill,50%); background:linear-gradient(90deg, #ff4d6d, #ff9e00); border-radius:3px; }
+  .control input[type=range] { position:absolute; inset:0; width:100%; height:100%; -webkit-appearance:none; background:transparent; outline:none; margin:0; }
+  .control input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:#fff; box-shadow:0 0 12px #ff4d6d; cursor:pointer; border:2px solid #ff4d6d; }
+  .bot-input-row { display:flex; gap:10px; align-items:center; }
+  .bot-input-row input { flex:1; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:8px; padding:9px 12px; color:#f4f5fa; font-size:12px; outline:none; }
+  .bot-input-row button { background:#ff4d6d; color:#050507; border:none; border-radius:8px; padding:9px 16px; font-size:11px; font-weight:800; cursor:pointer; }
+  .bot-log { margin-top:10px; font-size:11px; color:#9a9ab0; max-height:80px; overflow-y:auto; }
+  .driver-modes { display:flex; gap:8px; }
+</style>
+
+<div class="shell">
+  <div class="header">
+    <div class="brand">
+      <div class="town">Tye</div>
+      <div class="type">Resonance Killer</div>
+    </div>
+    <div class="tagline">Surgical Resonance Removal</div>
+    <div class="presetbar"><button class="preset active" data-p="0">BOXY VOCAL</button><button class="preset" data-p="1">RINGY SNARE</button><button class="preset" data-p="2">HARSH GTR</button><button class="preset" data-p="3">MASTER</button></div>
+    <div class="ai-tray">
+      <button class="ai-btn on" id="driverBtn">D</button>
+      <button class="ai-btn" id="botBtn">B</button>
+    </div>
+  </div>
+
+  <div class="ai-panel" id="aiPanel">
+    <div id="driverPanel">
+      <div style="font-size:10px;letter-spacing:1.2px;color:#6e6e85;text-transform:uppercase;margin-bottom:8px;">Titan Driver â€” Tye</div>
+      <div class="driver-modes">
+        <button class="preset active" data-mode="SMART">SMART</button>
+        <button class="preset" data-mode="TIGHT">TIGHT</button>
+        <button class="preset" data-mode="OPEN">OPEN</button>
+      </div>
+    </div>
+    <div id="botPanel" style="display:none;">
+      <div class="bot-input-row">
+        <input id="botInput" placeholder="Ask for help...">
+        <button id="botSend">Send</button>
+      </div>
+      <div class="bot-log" id="botLog"></div>
+    </div>
+  </div>
+
+  <div class="stage">
+    <canvas class="main" id="mainCanvas"></canvas>
+    <div class="readouts"><div class="readout-card"><div class="readout-label">Center Freq</div><div class="readout-value" id="readout0">500 Hz</div></div><div class="readout-card"><div class="readout-label">Depth</div><div class="readout-value" id="readout1">60%</div></div></div>
+  </div>
+
+  <div class="footer"><div class="control">
+    <div class="control-top"><span class="control-name">Center Freq</span><span class="control-val">50</span></div>
+    <div class="slider-track"><input type="range" min="0" max="100" value="50" data-param="param1"></div>
+  </div><div class="control">
+    <div class="control-top"><span class="control-name">Q</span><span class="control-val">40</span></div>
+    <div class="slider-track"><input type="range" min="0" max="100" value="40" data-param="param2"></div>
+  </div><div class="control">
+    <div class="control-top"><span class="control-name">Depth</span><span class="control-val">100</span></div>
+    <div class="slider-track"><input type="range" min="0" max="100" value="100" data-param="param3"></div>
+  </div><div class="control">
+    <div class="control-top"><span class="control-name">Sensitivity</span><span class="control-val">50</span></div>
+    <div class="slider-track"><input type="range" min="0" max="100" value="50" data-param="param4"></div>
+  </div><div class="control">
+    <div class="control-top"><span class="control-name">Threshold</span><span class="control-val">50</span></div>
+    <div class="slider-track"><input type="range" min="0" max="100" value="50" data-param="param5"></div>
+  </div><div class="control">
+    <div class="control-top"><span class="control-name">Release</span><span class="control-val">50</span></div>
+    <div class="slider-track"><input type="range" min="0" max="100" value="50" data-param="param6"></div>
+  </div></div>
+</div>
+</template>
+
+<script>
+(function () {
+  const U = window.TitanUIUtils;
+  const PRESETS = [{"name":"BOXY VOCAL","color":"#ff4d6d"},{"name":"RINGY SNARE","color":"#ff4d6d"},{"name":"HARSH GTR","color":"#ff4d6d"},{"name":"MASTER","color":"#ff4d6d"}];
+  class TyeUI extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode:'open'});
+      this.shadowRoot.appendChild(document.getElementById('reso-kill-ui').content.cloneNode(true));
+      this._p = {};
+      for(let i=1;i<=6;i++) this._p['param'+i] = (i===2?40:(i===3?100:50));
+      this._preset = 0;
+      this._aiOpen = false; this._aiTab = 'driver';
+    }
+    connectedCallback() { this._bindControls(); this._bindPresets(); this._bindAI(); this._startMain(); }
+    _set(id,v){
+      this._p[id] = U.clamp(v,0,100);
+      const f=this.shadowRoot.querySelector('.control input[data-param="'+id+'"]');
+      if(f){ f.value=this._p[id]; f.parentElement.style.setProperty('--fill', this._p[id]+'%'); f.closest('.control').querySelector('.control-val').textContent=Math.round(this._p[id]); }
+      U.dispatchParamChange(this,id,this._p[id]);
+    }
+    _bindControls(){
+      this.shadowRoot.querySelectorAll('.control input').forEach(inp=>{
+        const id=inp.dataset.param;
+        inp.parentElement.style.setProperty('--fill', this._p[id]+'%');
+        inp.addEventListener('input',()=>this._set(id,parseFloat(inp.value)));
+      });
+    }
+    _bindPresets(){
+      this.shadowRoot.querySelectorAll('.preset[data-p]').forEach(pill=>{
+        pill.addEventListener('click',()=>{
+          this.shadowRoot.querySelectorAll('.preset[data-p]').forEach(x=>x.classList.remove('active'));
+          pill.classList.add('active');
+          this._preset = parseInt(pill.dataset.p);
+        });
+      });
+    }
+    _bindAI(){
+      const driverBtn=this.shadowRoot.getElementById('driverBtn');
+      const botBtn=this.shadowRoot.getElementById('botBtn');
+      const panel=this.shadowRoot.getElementById('aiPanel');
+      const driverPanel=this.shadowRoot.getElementById('driverPanel');
+      const botPanel=this.shadowRoot.getElementById('botPanel');
+      const toggle=(tab)=>{
+        if(this._aiOpen && this._aiTab===tab){ this._aiOpen=false; panel.classList.remove('open'); driverBtn.classList.remove('on'); botBtn.classList.remove('on'); return; }
+        this._aiOpen=true; this._aiTab=tab;
+        panel.classList.add('open');
+        driverPanel.style.display=tab==='driver'?'block':'none';
+        botPanel.style.display=tab==='bot'?'block':'none';
+        driverBtn.classList.toggle('on',tab==='driver');
+        botBtn.classList.toggle('on',tab==='bot');
+      };
+      driverBtn.addEventListener('click',()=>toggle('driver'));
+      botBtn.addEventListener('click',()=>toggle('bot'));
+      this.shadowRoot.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{
+        this.shadowRoot.querySelectorAll('[data-mode]').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+      }));
+      this.shadowRoot.getElementById('botSend').addEventListener('click',()=>this._botReply());
+      this.shadowRoot.getElementById('botInput').addEventListener('keydown',e=>{ if(e.key==='Enter') this._botReply(); });
+    }
+    _botReply(){
+      const inp=this.shadowRoot.getElementById('botInput');
+      const log=this.shadowRoot.getElementById('botLog');
+      const t=inp.value.trim(); if(!t) return;
+      const runtime=window.TitanDriverRuntime;
+      const esc=runtime?.escapeHtml || ((value)=>String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'));
+      log.innerHTML += '<div style="color:#f4f5fa;">You: '+esc(t)+'</div>';
+      const params={};
+      this.shadowRoot.querySelectorAll('[data-param]').forEach(el=>{ params[el.dataset.param]=el.value; });
+      const activeMode=this.shadowRoot.querySelector('[data-mode].active')?.dataset.mode || 'SMART';
+      const pluginName=this.tagName.toLowerCase().replace(/-/g,' ');
+      const answer=runtime?.answer(t,{pluginName,botName:pluginName+' bot',driverName:'Titan Plugin Driver',mode:activeMode,params});
+      let r=answer?.response || 'Try a preset or adjust the parameters in the footer.';
+      log.innerHTML += '<div style="color:#ff4d6d;">Tye: '+esc(r)+'</div>';
+      inp.value='';
+    }
+    _startMain(){
+      const cvs=this.shadowRoot.getElementById('mainCanvas');
+      let t=0;
+      const draw=()=>{
+        const ctx=cvs.getContext('2d');
+        const rect=cvs.getBoundingClientRect();
+        cvs.width=rect.width*(window.devicePixelRatio||1);
+        cvs.height=rect.height*(window.devicePixelRatio||1);
+        ctx.setTransform(window.devicePixelRatio||1,0,0,window.devicePixelRatio||1,0,0);
+        const W=rect.width, H=rect.height;
+        t+=0.015;
+        ctx.fillStyle='#07070b'; ctx.fillRect(0,0,W,H);
+        const COL='#ff4d6d'; const COL2='#ff9e00';
+        
+      const cx=W*0.5, cy=H*0.55, w=W*0.8, h=H*0.55;
+      // spectrum grid with glow
+      ctx.strokeStyle='#ffffff10'; ctx.lineWidth=1;
+      for(let i=0;i<=8;i++){ const y=cy+h*0.5 - h*(i/8); ctx.beginPath(); ctx.moveTo(cx-w*0.5, y); ctx.lineTo(cx+w*0.5, y); ctx.stroke(); }
+      for(let i=0;i<=10;i++){ const x=cx-w*0.5 + w*(i/10); ctx.beginPath(); ctx.moveTo(x, cy-h*0.5); ctx.lineTo(x, cy+h*0.5); ctx.stroke(); }
+      const f=this._p.param1/100, depth=this._p.param3/100;
+      const notchX=cx-w*0.5 + f*w;
+      // response curve
+      ctx.beginPath(); ctx.strokeStyle=COL; ctx.lineWidth=3; ctx.moveTo(cx-w*0.5, cy-h*0.1);
+      for(let x=cx-w*0.5; x<=cx+w*0.5; x+=4){ const dist=Math.abs(x-notchX)/(60+depth*200); let d=0; if(dist<1) d=-(1-dist*dist)*h*0.55*depth; const y=cy-h*0.1 + d + Math.sin(x*0.02+t)*3; ctx.lineTo(x,y); }
+      ctx.stroke();
+      // fill under curve
+      ctx.lineTo(cx+w*0.5, cy+h*0.5); ctx.lineTo(cx-w*0.5, cy+h*0.5); ctx.closePath(); ctx.fillStyle=COL+'18'; ctx.fill();
+      // notch marker
+      const ny=cy-h*0.1-depth*h*0.55*0.5;
+      const marker=ctx.createRadialGradient(notchX,ny,2,notchX,ny,20); marker.addColorStop(0,COL); marker.addColorStop(1,'transparent');
+      ctx.fillStyle=marker; ctx.beginPath(); ctx.arc(notchX,ny,20,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=COL; ctx.beginPath(); ctx.arc(notchX,ny,5,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#fff'; ctx.font='700 12px Inter'; ctx.textAlign='center'; ctx.fillText(Math.round(this._p.param1*20)+' Hz', notchX, ny+28);
+      this.shadowRoot.querySelector('#readout0').textContent=Math.round(this._p.param1*20)+' Hz';
+      this.shadowRoot.querySelector('#readout1').textContent=Math.round(this._p.param3)+'%';
+    
+        requestAnimationFrame(draw);
+      };
+      draw();
+      U.observeResize(this.shadowRoot.host,()=>{});
+    }
+  }
+  if(!customElements.get('reso-kill-ui')) customElements.define('reso-kill-ui',TyeUI);
+})();
+</script>

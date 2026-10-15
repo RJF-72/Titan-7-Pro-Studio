@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Titan 7 Pro - License Activation</title>
+    <link rel="icon" href="icon.ico" type="image/x-icon">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #07070d 0%, #14142a 100%);
+            color: #e2e2f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        .license-container {
+            width: 100%;
+            max-width: 520px;
+            background: rgba(12, 12, 24, 0.95);
+            border: 1px solid #2a2a55;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .license-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .license-header img {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 12px;
+        }
+        .license-header h1 {
+            font-size: 24px;
+            background: linear-gradient(135deg, #ff6b9d, #7c5cff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+        .license-header p {
+            font-size: 12px;
+            color: #8888b0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .tier-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .tier-option {
+            background: rgba(7, 7, 13, 0.6);
+            border: 2px solid #2a2a55;
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+        .tier-option:hover {
+            border-color: #7c5cff;
+            background: rgba(124, 92, 255, 0.05);
+        }
+        .tier-option.selected {
+            border-color: #7c5cff;
+            background: rgba(124, 92, 255, 0.1);
+        }
+        .tier-option.owner-tier {
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.05);
+        }
+        .tier-option.owner-tier.selected {
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.15);
+        }
+        .tier-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .tier-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .tier-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #7c5cff;
+        }
+        .tier-option.owner-tier .tier-price {
+            color: #d4af37;
+        }
+        .tier-desc {
+            font-size: 12px;
+            color: #8888b0;
+        }
+        .license-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .license-form label {
+            font-size: 12px;
+            color: #8888b0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .license-form input {
+            background: #07070d;
+            border: 1px solid #2a2a55;
+            color: #e2e2f0;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: 0.2s ease;
+        }
+        .license-form input:focus {
+            border-color: #7c5cff;
+        }
+        .license-form button {
+            padding: 12px;
+            background: linear-gradient(135deg, #ff6b9d, #7c5cff);
+            border: none;
+            color: #fff;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+        .license-form button:hover {
+            box-shadow: 0 0 16px rgba(124, 92, 255, 0.3);
+        }
+        .license-form button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .license-message {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: none;
+        }
+        .license-message.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+        .license-message.success {
+            display: block;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #22c55e;
+        }
+        .license-footer {
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #2a2a55;
+            font-size: 11px;
+            color: #5c5c80;
+            text-align: center;
+            line-height: 1.5;
+        }
+        .license-footer strong {
+            color: #8888b0;
+        }
+        .renewal-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #2a2a55;
+        }
+        .renewal-section h3 {
+            font-size: 14px;
+            color: #8888b0;
+            margin-bottom: 12px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="license-container">
+        <div class="license-header">
+            <h1>Titan 7 Pro</h1>
+            <p>License Activation</p>
+        </div>
+
+        <div class="tier-selector">
+            <div class="tier-option" data-tier="monthly">
+                <div class="tier-header">
+                    <span class="tier-name">Monthly</span>
+                    <span class="tier-price">$29.99</span>
+                </div>
+                <div class="tier-desc">30-day access, renewable monthly</div>
+            </div>
+            <div class="tier-option" data-tier="annual">
+                <div class="tier-header">
+                    <span class="tier-name">Annual</span>
+                    <span class="tier-price">$349.99</span>
+                </div>
+                <div class="tier-desc">1-year access, save $10 vs monthly</div>
+            </div>
+            <div class="tier-option" data-tier="lifetime">
+                <div class="tier-header">
+                    <span class="tier-name">Lifetime</span>
+                    <span class="tier-price">$599.99</span>
+                </div>
+                <div class="tier-desc">Perpetual access + 5 years of upgrades</div>
+            </div>
+            <div class="tier-option owner-tier" data-tier="owner">
+                <div class="tier-header">
+                    <span class="tier-name">Owner Access</span>
+                    <span class="tier-price">FREE</span>
+                </div>
+                <div class="tier-desc">For Redemption Road Music Group owners</div>
+            </div>
+        </div>
+
+        <form class="license-form" id="licenseForm">
+            <div>
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="your@email.com" autocomplete="off" required>
+            </div>
+            <div id="licenseKeySection">
+                <label for="licenseKey">License Key from Stripe</label>
+                <input type="text" id="licenseKey" placeholder="Paste your Stripe license key" autocomplete="off">
+                <div style="font-size: 11px; color: #8888b0; margin-top: 4px;">
+                    You'll receive this key after payment via Stripe
+                </div>
+            </div>
+            <button type="submit" id="activateBtn">Activate License</button>
+        </form>
+
+        <div class="renewal-section">
+            <h3>Renew Subscription</h3>
+            <p style="font-size: 11px; color: #8888b0; margin-bottom: 12px;">
+                Enter the email and renewal key sent to you by Stripe
+            </p>
+            <form class="license-form" id="renewalForm">
+                <div>
+                    <label for="renewalEmail">Email Address</label>
+                    <input type="email" id="renewalEmail" placeholder="your@email.com" autocomplete="off" required>
+                </div>
+                <div>
+                    <label for="renewalKey">Stripe Renewal Key</label>
+                    <input type="text" id="renewalKey" placeholder="Paste your Stripe renewal key" autocomplete="off" required>
+                </div>
+                <button type="submit">Renew License</button>
+            </form>
+        </div>
+
+        <div class="license-message" id="licenseMessage"></div>
+
+        <div class="license-footer">
+            <strong>Licensed to:</strong> Redemption Road Music Group<br>
+            Unauthorized distribution, resale, or reverse engineering is strictly prohibited.<br>
+            © 2026 Titan Audio. All rights reserved.
+        </div>
+    </div>
+
+    <script>
+        function showMessage(text, type) {
+            const msg = document.getElementById('licenseMessage');
+            msg.textContent = text;
+            msg.className = 'license-message ' + type;
+        }
+
+        const licenseApi = (typeof window !== 'undefined' && window.titan && window.titan.license) ? window.titan.license : null;
+
+        let selectedTier = null;
+
+        document.querySelectorAll('.tier-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.tier-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+                selectedTier = option.dataset.tier;
+
+                const licenseKeySection = document.getElementById('licenseKeySection');
+                const activateBtn = document.getElementById('activateBtn');
+
+                if (selectedTier === 'owner') {
+                    licenseKeySection.classList.add('hidden');
+                    activateBtn.textContent = 'Activate Owner Access';
+                } else {
+                    licenseKeySection.classList.remove('hidden');
+                    activateBtn.textContent = 'Activate License';
+                }
+            });
+        });
+
+        document.getElementById('licenseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!licenseApi) {
+                showMessage('License activation is only available in the Titan 7 Pro desktop app.', 'error');
+                return;
+            }
+            if (!selectedTier) {
+                showMessage('Please select a license tier.', 'error');
+                return;
+            }
+
+            const email = document.getElementById('email').value.trim();
+
+            if (selectedTier === 'owner') {
+                const result = await licenseApi.activateOwner(email);
+                if (result.success) {
+                    showMessage('Owner access granted. Free forever license activated.', 'success');
+                    setTimeout(() => licenseApi.notifyActivated(), 1200);
+                } else {
+                    showMessage(result.reason || 'Owner authentication failed.', 'error');
+                }
+            } else {
+                const licenseKey = document.getElementById('licenseKey').value.trim();
+                if (!licenseKey) {
+                    showMessage('Please enter your license key.', 'error');
+                    return;
+                }
+                const result = await licenseApi.activateLicense(email, licenseKey, selectedTier);
+                if (result.success) {
+                    const tierLabel = selectedTier === 'lifetime' ? 'Lifetime' : selectedTier === 'annual' ? 'Annual' : 'Monthly';
+                    showMessage(`${tierLabel} license activated successfully. Launching Titan 7 Pro...`, 'success');
+                    setTimeout(() => licenseApi.notifyActivated(), 1200);
+                } else {
+                    showMessage(result.reason || 'Activation failed.', 'error');
+                }
+            }
+        });
+
+        document.getElementById('renewalForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!licenseApi) {
+                showMessage('License renewal is only available in the Titan 7 Pro desktop app.', 'error');
+                return;
+            }
+
+            const email = document.getElementById('renewalEmail').value.trim();
+            const renewalKey = document.getElementById('renewalKey').value.trim();
+
+            const result = await licenseApi.renewLicense(email, renewalKey);
+            if (result.success) {
+                showMessage('License renewed successfully. Launching Titan 7 Pro...', 'success');
+                setTimeout(() => licenseApi.notifyActivated(), 1200);
+            } else {
+                showMessage(result.reason || 'Renewal failed.', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

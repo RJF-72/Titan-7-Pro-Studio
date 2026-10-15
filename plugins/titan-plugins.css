@@ -1,0 +1,23 @@
+:root {
+    --titan-bg-dark: #07070d;
+    --titan-bg-surface: #0c0c18;
+    --titan-bg-elevated: #14142a;
+    --titan-bg-card: #1c1c38;
+    --titan-bg-hover: #24244a;
+    --titan-border: #2a2a55;
+    --titan-accent: #7c5cff;
+    --titan-accent-glow: rgba(124, 92, 255, 0.3);
+    --titan-cyan: #00d4ff;
+    --titan-pink: #ff6b9d;
+    --titan-green: #22c55e;
+    --titan-orange: #f59e0b;
+    --titan-red: #ef4444;
+    --titan-text: #e2e2f0;
+    --titan-text-dim: #8888b0;
+    --titan-text-dimmer: #5c5c80;
+    --titan-radius: 8px;
+    --titan-radius-sm: 4px;
+    --titan-radius-lg: 12px;
+    --titan-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    --titan-transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Titan 7 Pro - RDSL</title>
+    <link rel="icon" href="icon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="rdsl-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="rdsl-body">
+    <!-- Header -->
+    <header class="rdsl-header">
+        <div class="rdsl-logo">
+            <i class="fas fa-code"></i>
+            <div class="rdsl-brand">
+                <h1>RDSL™</h1>
+                <span>Red Dirt Studio Language · Proprietary Technology</span>
+            </div>
+        </div>
+        <div class="rdsl-nav" id="rdslNav">
+            <button class="nav-btn" data-section="editor">
+                <i class="fas fa-edit"></i> Editor
+            </button>
+            <button class="nav-btn active" data-section="natural">
+                <i class="fas fa-comment-alt"></i> Natural Language
+            </button>
+            <button class="nav-btn" data-section="library">
+                <i class="fas fa-book"></i> Library
+            </button>
+            <button class="nav-btn" id="btnBackToDAW">
+                <i class="fas fa-arrow-left"></i> Back to DAW
+            </button>
+        </div>
+    </header>
+
+    <div class="rdsl-main" id="rdslMain">
+        <!-- Natural Language Section (default visible) -->
+        <div id="naturalSection" class="natural-section">
+        <!-- Left Panel - Natural Language Input -->
+        <aside class="rdsl-panel natural-language-panel">
+            <h2><i class="fas fa-comments"></i> Natural Language Input</h2>
+            <p class="panel-description">Describe what you want to create in plain English</p>
+
+            <div class="nl-input-container">
+                <textarea id="nlInput" placeholder="Example: Create a vintage tube compressor with 4:1 ratio, 10ms attack, and 100ms release. Add a warm saturation curve."></textarea>
+                <div class="nl-actions">
+                    <button class="btn-primary" id="generateCode" data-action="generate">
+                        <i class="fas fa-magic"></i> Generate RDSL Code
+                    </button>
+                    <button class="btn-secondary" id="clearNL" data-action="clearNL">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                </div>
+            </div>
+
+            <div class="nl-suggestions">
+                <h3>Quick Examples:</h3>
+                <div class="suggestion-chips">
+                    <button class="suggestion-chip" data-suggestion="compressor">
+                        <i class="fas fa-compress-arrows-alt"></i> Compressor
+                    </button>
+                    <button class="suggestion-chip" data-suggestion="eq">
+                        <i class="fas fa-sliders-h"></i> EQ
+                    </button>
+                    <button class="suggestion-chip" data-suggestion="reverb">
+                        <i class="fas fa-water"></i> Reverb
+                    </button>
+                    <button class="suggestion-chip" data-suggestion="synth">
+                        <i class="fas fa-music"></i> Synth
+                    </button>
+                    <button class="suggestion-chip" data-suggestion="analyzer">
+                        <i class="fas fa-chart-line"></i> Analyzer
+                    </button>
+                </div>
+            </div>
+
+            <div class="rdsl-bot-panel">
+                <div class="bot-header-small">
+                    <div class="bot-avatar-small">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="bot-info-small">
+                        <h4>RDSL Bot</h4>
+                        <span class="bot-status online">Online</span>
+                    </div>
+                </div>
+                <div class="bot-messages-small" id="rdslBotMessages">
+                    <div class="bot-message-small">
+                        <p>Hi. Describe the processor you want to create and I will generate RDSL source plus an exportable manifest package definition.</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center Panel - Code Editor -->
+        <main class="rdsl-panel code-editor-panel">
+            <h2><i class="fas fa-code"></i> RDSL Code Editor</h2>
+
+            <div class="editor-toolbar">
+                <div class="toolbar-group">
+                    <button class="toolbar-btn" data-action="run">
+                        <i class="fas fa-play"></i> Run
+                    </button>
+                    <button class="toolbar-btn" data-action="compile">
+                        <i class="fas fa-cogs"></i> Compile
+                    </button>
+                    <button class="toolbar-btn" data-action="loadSession" title="Compile and load this RDSL patch as a live effect on the selected track">
+                        <i class="fas fa-sign-in-alt"></i> Load into Session
+                    </button>
+                    <button class="toolbar-btn" data-action="save">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+                </div>
+                <div class="toolbar-group">
+                    <button class="toolbar-btn" data-action="validate">
+                        <i class="fas fa-check-circle"></i> Validate
+                    </button>
+                    <button class="toolbar-btn" data-action="format">
+                        <i class="fas fa-align-left"></i> Format
+                    </button>
+                                        <button class="toolbar-btn" data-action="loadPackage">
+                        <i class="fas fa-folder-open"></i> Load Package
+                    </button>
+                    <button class="toolbar-btn" data-action="export">
+                        <i class="fas fa-download"></i> Export Package
+                    </button>
+                </div>
+                <div class="toolbar-info">
+                    <span id="syntaxStatus"><i class="fas fa-check"></i> Syntax OK</span>
+                    <span id="cursorPosition">Ln 1, Col 1</span>
+                </div>
+            </div>
+
+            <div class="code-editor-container">
+                <div class="line-numbers" id="lineNumbers">1</div>
+                <textarea id="codeEditor" class="code-editor" spellcheck="false"></textarea>
+            </div>
+
+            <div class="editor-tabs">
+                <button class="editor-tab active" data-tab="output">
+                    <i class="fas fa-terminal"></i> Output
+                </button>
+                <button class="editor-tab" data-tab="console">
+                    <i class="fas fa-bug"></i> Console
+                </button>
+                <button class="editor-tab" data-tab="docs">
+                    <i class="fas fa-book-open"></i> Documentation
+                </button>
+            </div>
+
+            <div class="editor-panel-content" id="outputPanel">
+                <div class="output-content" id="outputContent">
+                    <div class="output-line success">
+                        <i class="fas fa-check"></i> RDSL Environment Ready
+                    </div>
+                    <div class="output-line info">
+                        <i class="fas fa-info-circle"></i> Driver initialized - Ready to compile
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Panel - Component Preview & Driver Status -->
+        <aside class="rdsl-panel preview-panel" id="previewPanel">
+            <h2><i class="fas fa-eye"></i> Component Preview</h2>
+
+            <div class="preview-container" id="previewContainer">
+                <div class="preview-placeholder">
+                    <i class="fas fa-plug"></i>
+                    <p>Generate or load a component to preview</p>
+                </div>
+            </div>
+
+            <div class="driver-status-panel">
+                <h3><i class="fas fa-microchip"></i> RDSL Driver</h3>
+                <div class="driver-metrics">
+                    <div class="metric">
+                        <span class="metric-label">Status</span>
+                        <span class="metric-value active" id="driverStatus">Idle</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Compilation</span>
+                        <span class="metric-value" id="driverCompilation">Not compiled</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Latency</span>
+                        <span class="metric-value" id="driverLatency">0.00ms</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Memory</span>
+                        <span class="metric-value" id="driverMemory">0.00 MB</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="component-controls">
+                <h3>Component Controls</h3>
+                <div class="control-group">
+                    <label>Component Type</label>
+                    <select id="componentType">
+                        <option>Effect</option>
+                        <option>Instrument</option>
+                        <option>Analyzer</option>
+                        <option>Processor</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Audio Inputs</label>
+                    <input type="number" value="2" min="1" max="16" id="audioInputs">
+                </div>
+                <div class="control-group">
+                    <label>Audio Outputs</label>
+                    <input type="number" value="2" min="1" max="16" id="audioOutputs">
+                </div>
+                <div class="control-group">
+                    <label>
+                        <input type="checkbox" checked id="enableGPU">
+                        GPU Acceleration
+                    </label>
+                </div>
+                <div class="control-group">
+                    <label>
+                        <input type="checkbox" checked id="realtimeSafe">
+                        Realtime Safe
+                    </label>
+                </div>
+            </div>
+
+            <div class="export-options">
+                <button class="btn-primary full-width" data-export="vst3">
+                    <i class="fas fa-file-export"></i> Export VST3 Manifest
+                </button>
+                <button class="btn-secondary full-width" data-export="au">
+                    <i class="fas fa-apple-alt"></i> Export AU Manifest
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Editor Section (full-width alternative view) -->
+    <div id="editorSection" style="display:none;width:100%;height:100%;padding:0">
+        <div class="rdsl-panel" style="margin:0;height:100%;border-radius:var(--radius-lg)">
+            <div class="editor-toolbar">
+                <div class="toolbar-group">
+                    <button class="toolbar-btn" data-action="run"><i class="fas fa-play"></i> Run</button>
+                    <button class="toolbar-btn" data-action="compile"><i class="fas fa-cogs"></i> Compile</button>
+                    <button class="toolbar-btn" data-action="save"><i class="fas fa-save"></i> Save</button>
+                </div>
+                <div class="toolbar-group">
+                    <button class="toolbar-btn" data-action="validate"><i class="fas fa-check-circle"></i> Validate</button>
+                    <button class="toolbar-btn" data-action="format"><i class="fas fa-align-left"></i> Format</button>
+                                        <button class="toolbar-btn" data-action="loadPackage">
+                        <i class="fas fa-folder-open"></i> Load Package
+                    </button>
+                    <button class="toolbar-btn" data-action="export">
+                        <i class="fas fa-download"></i> Export Package
+                    </button>
+                </div>
+                <div class="toolbar-info">
+                    <span id="syntaxStatus2"><i class="fas fa-check"></i> Syntax OK</span>
+                    <span id="cursorPosition2">Ln 1, Col 1</span>
+                </div>
+            </div>
+            <div class="code-editor-container">
+                <div class="line-numbers" id="lineNumbers2">1</div>
+                <textarea id="codeEditor2" class="code-editor" spellcheck="false"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Library Section (full-width alternative view) -->
+    <div id="librarySection" class="library-section">
+        <h2 class="library-heading"><i class="fas fa-book"></i> RDSL Component Library</h2>
+        <div class="library-grid">
+            <div class="library-card" data-load="compressor">
+                <h4>Compressor</h4>
+                <p>Dynamic range compressor with ratio, threshold, attack, release</p>
+            </div>
+            <div class="library-card" data-load="eq">
+                <h4>Parametric EQ</h4>
+                <p>4-band equalizer with low/high shelves and peaking filters</p>
+            </div>
+            <div class="library-card" data-load="reverb">
+                <h4>Convolution Reverb</h4>
+                <p>Room simulator with adjustable size, decay, damping</p>
+            </div>
+            <div class="library-card" data-load="delay">
+                <h4>Digital Delay</h4>
+                <p>Stereo delay with feedback, ping-pong, and filtering</p>
+            </div>
+            <div class="library-card" data-load="saturator">
+                <h4>Saturator</h4>
+                <p>Analog tape/tube saturation with drive and tone control</p>
+            </div>
+            <div class="library-card" data-load="synth">
+                <h4>Synthesizer</h4>
+                <p>Dual-oscillator subtractive synth with filter and envelope</p>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script src="titan-driver-runtime.js"></script>
+        <script src="rdsl-driver.js"></script>
+    <script src="rdsl-bot.js"></script>
+    <script src="rdsl-compiler.js"></script>
+    <script src="rdsl-loader.js"></script>
+    <script src="rdsl-app.js"></script>
+    <input id="rdslPackageInput" type="file" accept=".json,.rdslpkg,.rdslpackage" hidden>
+</body>
+</html>
+
+

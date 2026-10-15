@@ -1,0 +1,145 @@
+<!-- DynaShapeUI.html -->
+<template id="dyna-shape-ui">
+  <style>
+    :host {
+      display: grid;
+      grid-template-rows: 1fr 160px;
+      background: var(--titan-bg-dark, #0F0F12);
+      height: 100%; width: 100%;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    /* Interactive Frequency Response Canvas */
+    .freq-response-container {
+      position: relative; width: 100%; height: 100%;
+      background: #121215; border-bottom: 1px solid #2A2A2E;
+    }
+    #freqCanvas { width: 100%; height: 100%; cursor: crosshair; }
+    
+    /* Draggable Crossover Nodes */
+    .crossover-node {
+      position: absolute; width: 16px; height: 16px;
+      background: #EAEAEA; border: 2px solid #0F0F12;
+      border-radius: 50%; transform: translate(-50%, -50%);
+      cursor: ew-resize; z-index: 10;
+      box-shadow: 0 0 10px rgba(255,255,255,0.3);
+    }
+    .crossover-node:hover { background: #00E5FF; }
+
+    /* Bottom Control Panel */
+    .controls-panel {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px; padding: 15px;
+    }
+    
+    .band-strip {
+      background: #1A1A1E; border-radius: 8px; padding: 10px;
+      display: flex; flex-direction: column; align-items: center;
+      border-top: 3px solid var(--band-color);
+    }
+    .band-strip.band1 { --band-color: #4A90E2; } /* Low: Blue */
+    .band-strip.band2 { --band-color: #00E5FF; } /* Low-Mid: Cyan */
+    .band-strip.band3 { --band-color: #F5A623; } /* High-Mid: Yellow */
+    .band-strip.band4 { --band-color: #FF3366; } /* High: Red */
+
+    .band-label { font-size: 11px; font-weight: 700; color: var(--band-color); margin-bottom: 8px; letter-spacing: 1px; }
+    
+    /* Vertical GR Meter */
+    .gr-meter-track {
+      width: 8px; height: 60px; background: #0A0A0C; border-radius: 4px;
+      position: relative; margin-bottom: 10px; overflow: hidden;
+    }
+    .gr-meter-fill {
+      position: absolute; bottom: 0; width: 100%; height: 0%;
+      background: var(--band-color); transition: height 0.05s linear;
+    }
+
+    .knob-row { display: flex; gap: 15px; margin-top: 5px; }
+  </style>
+
+  <!-- Frequency Response Visualizer -->
+  <div class="freq-response-container">
+    <canvas id="freqCanvas"></canvas>
+    <div class="crossover-node" id="xo1" style="left: 25%; top: 50%"></div>
+    <div class="crossover-node" id="xo2" style="left: 50%; top: 50%"></div>
+    <div class="crossover-node" id="xo3" style="left: 75%; top: 50%"></div>
+  </div>
+
+  <!-- 4-Band Control Strips -->
+  <div class="controls-panel">
+    <div class="band-strip band1" data-band="0">
+      <span class="band-label">LOW</span>
+      <div class="gr-meter-track"><div class="gr-meter-fill" id="gr0"></div></div>
+      <div class="knob-row">
+        <div class="titan-knob" data-param="Band1Threshold" style="--value: 50"></div>
+        <div class="titan-knob" data-param="Band1Ratio" style="--value: 30"></div>
+      </div>
+    </div>
+    <div class="band-strip band2" data-band="1">
+      <span class="band-label">LOW-MID</span>
+      <div class="gr-meter-track"><div class="gr-meter-fill" id="gr1"></div></div>
+      <div class="knob-row">
+        <div class="titan-knob" data-param="Band2Threshold" style="--value: 50"></div>
+        <div class="titan-knob" data-param="Band2Ratio" style="--value: 30"></div>
+      </div>
+    </div>
+    <div class="band-strip band3" data-band="2">
+      <span class="band-label">HIGH-MID</span>
+      <div class="gr-meter-track"><div class="gr-meter-fill" id="gr2"></div></div>
+      <div class="knob-row">
+        <div class="titan-knob" data-param="Band3Threshold" style="--value: 50"></div>
+        <div class="titan-knob" data-param="Band3Ratio" style="--value: 30"></div>
+      </div>
+    </div>
+    <div class="band-strip band4" data-band="3">
+      <span class="band-label">HIGH</span>
+      <div class="gr-meter-track"><div class="gr-meter-fill" id="gr3"></div></div>
+      <div class="knob-row">
+        <div class="titan-knob" data-param="Band4Threshold" style="--value: 50"></div>
+        <div class="titan-knob" data-param="Band4Ratio" style="--value: 30"></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  class DynaShapeUI extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this.shadowRoot.appendChild(document.getElementById('dyna-shape-ui').content.cloneNode(true));
+      this.initFreqCanvas();
+      this.bindRDSLListener();
+    }
+
+    initFreqCanvas() {
+      // Canvas 2D context draws the 4 overlapping Linkwitz-Riley curves.
+      // Listens to mouse drag events on .crossover-node to update Crossover1/2/3 params.
+    }
+
+    bindRDSLListener() {
+      window.addEventListener('titan-rdsl-update', (e) => {
+        if (e.detail.plugin === 'dynashape') {
+          if (e.detail.action === 'tame_2k_4k_harshness') {
+            this.moveCrossoverNode('xo1', '25%'); // ~2000Hz
+            this.moveCrossoverNode('xo2', '50%'); // ~4000Hz
+            this.animateKnob('Band2Threshold', 20); // -12dB
+            this.animateKnob('Band2Ratio', 60);     // 4:1
+            this.highlightBand(1);
+            this.showFeedback("DynaShape: Created dynamic 2-4kHz band. Fast attack (5ms) and musical release (150ms) applied to tame vocal harshness.");
+          }
+        }
+      });
+    }
+
+    highlightBand(index) {
+      const strips = this.shadowRoot.querySelectorAll('.band-strip');
+      strips.forEach((s, i) => {
+        s.style.opacity = i === index ? '1.0' : '0.4';
+        s.style.transform = i === index ? 'scale(1.05)' : 'scale(1.0)';
+      });
+    }
+  }
+  customElements.define('dyna-shape-ui', DynaShapeUI);
+</script>

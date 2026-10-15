@@ -1,0 +1,144 @@
+<!-- VelvetBusUI.html -->
+<template id="velvet-bus-ui">
+  <style>
+    :host {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      grid-template-rows: 1fr 100px;
+      background: linear-gradient(180deg, #1E1E22 0%, #151518 100%);
+      height: 100%; width: 100%;
+      font-family: 'Inter', sans-serif;
+      border: 1px solid #333;
+      border-radius: 8px;
+    }
+
+    /* Left/Right VU Meters with Mechanical Physics */
+    .vu-meter-container {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      grid-row: 1 / 3;
+    }
+    .vu-face {
+      width: 120px; height: 120px; border-radius: 50%;
+      background: radial-gradient(circle, #F5F1E3 60%, #D4CDB5 100%);
+      border: 4px solid #2A2A2E;
+      position: relative;
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+    }
+    .vu-needle {
+      width: 2px; height: 50px; background: #FF3366;
+      position: absolute; bottom: 50%; left: 50%;
+      transform-origin: bottom center;
+      transform: rotate(calc(var(--db) * 1.5deg)); /* Hardware accelerated */
+      transition: transform 0.08s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Mechanical bounce */
+      border-radius: 2px;
+    }
+    .vu-needle::after {
+      content: ''; position: absolute; bottom: -4px; left: -4px;
+      width: 10px; height: 10px; background: #333; border-radius: 50%;
+    }
+
+    /* Center Console Area */
+    .console-center {
+      grid-column: 2; grid-row: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative;
+    }
+    
+    /* Tube Glow Effect */
+    .tube-element {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: #333;
+      box-shadow: 0 0 calc(var(--drive) * 40px) calc(var(--drive) * 10px) rgba(255, 140, 0, var(--drive));
+      transition: box-shadow 0.2s ease-out;
+      margin-bottom: 20px;
+    }
+
+    /* The "Glue" Meter */
+    .glue-meter-container {
+      width: 80%; height: 12px; background: #0A0A0C; border-radius: 6px;
+      overflow: hidden; position: relative;
+    }
+    .glue-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #00E5FF, #00FF94);
+      transition: width 0.1s linear;
+    }
+    .glue-label {
+      position: absolute; top: -20px; left: 0;
+      font-size: 10px; letter-spacing: 2px; color: #00E5FF;
+    }
+
+    /* Bottom Controls */
+    .controls-row {
+      grid-column: 2; grid-row: 2;
+      display: flex; justify-content: space-around; align-items: center;
+    }
+  </style>
+
+  <!-- Left VU -->
+  <div class="vu-meter-container">
+    <div class="vu-face">
+      <div class="vu-needle" id="needleL" style="--db: 0"></div>
+    </div>
+    <span style="margin-top:10px; font-size:12px; color:#888;">INPUT</span>
+  </div>
+
+  <!-- Center Console -->
+  <div class="console-center">
+    <div class="tube-element" id="tubeGlow" style="--drive: 0"></div>
+    
+    <div class="glue-meter-container">
+      <span class="glue-label">CONSOLE GLUE</span>
+    <div class="glue-fill" id="glueFill" style="width: 0%"></div>
+   </div>
+  </div>
+  </div>
+
+  <!-- Right VU -->
+  <div class="vu-meter-container">
+    <div class="vu-face">
+      <div class="vu-needle" id="needleR" style="--db: 0"></div>
+    </div>
+    <span style="margin-top:10px; font-size:12px; color:#888;">OUTPUT</span>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-row">
+    <div class="titan-knob" data-param="InputGain" style="--value: 50"></div>
+    <div class="titan-knob" data-param="TransformerDrive" style="--value: 30"></div>
+    <div class="titan-knob" data-param="SummingHeadroom" style="--value: 70"></div>
+    <div class="titan-knob" data-param="OutputGain" style="--value: 50"></div>
+  </div>
+</template>
+
+<script>
+  class VelvetBusUI extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this.shadowRoot.appendChild(document.getElementById('velvet-bus-ui').content.cloneNode(true));
+      this.bindRDSLListener();
+    }
+
+    bindRDSLListener() {
+      window.addEventListener('titan-rdsl-update', (e) => {
+        if (e.detail.plugin === 'velvetbus') {
+          if (e.detail.action === 'vintage_console_glue') {
+            this.animateKnob('TransformerDrive', 45);
+            this.animateKnob('SummingHeadroom', 60);
+            this.shadowRoot.getElementById('tubeGlow').style.setProperty('--drive', '0.45');
+            this.showFeedback("VelvetBus: Engaged transformer coupling and optimized summing headroom for vintage console glue.");
+          }
+        }
+      });
+
+      // Listen for real-time GPU metric updates
+      window.addEventListener('titan-velvet-metrics', (e) => {
+        this.shadowRoot.getElementById('glueFill').style.width = `${e.detail.glue * 100}%`;
+        this.shadowRoot.getElementById('needleL').style.setProperty('--db', e.detail.inputDB);
+        this.shadowRoot.getElementById('needleR').style.setProperty('--db', e.detail.outputDB);
+      });
+    }
+  }
+  customElements.define('velvet-bus-ui', VelvetBusUI);
+</script>

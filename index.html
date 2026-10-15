@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data:; connect-src 'self';">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Titan 7 Pro - Audio Workstation</title>
+    <link rel="icon" href="icon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+/* === TRACK LAYOUT: lanes and ruler extend with project length; container scrolls horizontally === */
+    .timeline-container { width: 100% !important; overflow-x: auto !important; }
+    .timeline-ruler { width: max-content; min-width: 100%; }
+    #arrangementView { position: relative; display: flex !important; flex-direction: column !important; width: max-content; min-width: 100%; }
+    .track-lane { position: relative; width: 100%; min-height: 80px; box-sizing: border-box; border-bottom: 1px solid var(--border); padding: 8px 0; overflow: visible !important; }
+    .audio-clip { position: absolute; left: 0; min-width: 100px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+    .arrangement-toolbar { position: sticky; left: 0; z-index: 5; }
+    .plugin-rack-panel { position: sticky; left: 0; z-index: 4; }
+    @keyframes titanRecPulse { 50% { opacity: 0.35; } }
+    .audio-clip.recording { border-color: #ef4444 !important; box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.35); pointer-events: none; }
+    .audio-clip.recording .clip-header span { color: #ef4444; animation: titanRecPulse 1s infinite; }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
+    <!-- Top Bar -->
+    <header class="top-bar">
+        <div class="top-left">
+            <div class="logo">
+                <i class="fas fa-wave-square"></i>
+                <span>TITAN 7 PRO</span>
+            </div>
+            <div class="session-name-box">
+                <input type="text" value="Untitled Session" class="session-name">
+                <span class="session-status" id="sessionStatus"><i class="fas fa-circle status-indicator"></i> Ready</span>
+                <div class="session-collab-row">
+                    <span id="collabSessionId">Session --</span>
+                    <span id="collabPeerCount">Solo</span>
+                    <button id="copyCollabLink" type="button" class="session-mini-btn">Invite</button>
+                    <button id="openCollabWindow" type="button" class="session-mini-btn">Window</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="top-center">
+            <div class="file-actions">
+                <button id="btnImportAudio" aria-label="Import Audio" title="Import Audio (Ctrl+I)"><i class="fas fa-file-audio"></i></button>
+                <button id="btnExportMixdown" aria-label="Export Mixdown" title="Export Mixdown"><i class="fas fa-file-export"></i></button>
+                <select id="exportFormat" class="export-format" aria-label="Export format" title="Export format">
+                    <option value="wav" selected>WAV</option>
+                    <option value="mp3">MP3 320kbps</option>
+                    <option value="flac">FLAC</option>
+                </select>
+                <div class="file-divider"></div>
+            </div>
+            <div class="time-display">
+                <span id="currentTime">00:00:00:00</span>
+                <span class="time-format">SMPTE</span>
+            </div>
+            <div class="transport-buttons">
+                <button class="transport-btn" id="rewind" aria-label="Rewind"><i class="fas fa-step-backward"></i></button>
+                <button class="transport-btn play" id="play" aria-label="Play"><i class="fas fa-play"></i></button>
+                <button class="transport-btn" id="stop" aria-label="Stop"><i class="fas fa-stop"></i></button>
+                <button class="transport-btn record" id="record" aria-label="Record"><i class="fas fa-circle"></i></button>
+                <button class="transport-btn takes-mode" id="takesMode" aria-label="Takes Mode" title="Takes mode: each recording pass becomes a take lane"><i class="fas fa-layer-group"></i></button>
+                <button class="transport-btn" id="loop" aria-label="Loop"><i class="fas fa-sync"></i></button>
+                <button class="transport-btn punch" id="punchIn" aria-label="Punch In" title="Punch In"><i class="fas fa-sign-in-alt"></i></button>
+                <button class="transport-btn punch" id="punchOut" aria-label="Punch Out" title="Punch Out"><i class="fas fa-sign-out-alt"></i></button>
+                <button class="transport-btn" id="markError" aria-label="Mark Error" title="Mark Error (E)"><i class="fas fa-flag"></i></button>
+                <span id="errorCount" style="font-size:10px;color:var(--red);margin-left:2px;min-width:16px"></span>
+            </div>
+            <div class="transport-summary">
+                <span class="status-chip transport-state" id="transportStateChip">Stopped</span>
+                <span class="status-chip" id="armedTrackCount">0 armed</span>
+                <span class="status-chip" id="punchRangeLabel">Punch off</span>
+            </div>
+        </div>
+
+        <div class="top-right">
+            <div class="bpm-control">
+                <label>BPM</label>
+                <input type="number" value="120.00" step="0.01">
+            </div>
+            <div class="time-signature">
+                <label>Sig</label>
+                <select id="timeSignatureSelect">
+                    <option>4/4</option>
+                    <option>3/4</option>
+                    <option>6/8</option>
+                </select>
+            </div>
+            <div class="system-meters">
+                <div class="sys-meter cpu-meter">
+                    <span>OUT</span>
+                    <div class="meter-bar"><div class="meter-fill" id="outputMeterFill" style="width:0%"></div></div>
+                </div>
+                <div class="sys-meter gpu-meter">
+                    <span>IN</span>
+                    <div class="meter-bar"><div class="meter-fill gpu" id="inputMeterFill" style="width:0%"></div></div>
+                </div>
+            </div>
+            <div class="latency-display">
+                <i class="fas fa-bolt"></i>
+                <span id="latencyDisplayValue">--</span>
+            </div>
+            <div class="theme-selector">
+                <i class="fas fa-palette"></i>
+                <select id="themeSelect" title="Choose Theme">
+                    <option value="default">Titan Dark</option>
+                    <option value="red-trim">Red Trim</option>
+                    <option value="cowboys">Dallas Cowboys</option>
+                    <option value="saints">New Orleans Saints</option>
+                    <option value="longhorns">Texas Longhorns</option>
+                </select>
+            </div>
+            <button class="aura-btn" id="btnRDSL">
+                <i class="fas fa-code"></i>
+                <span>RDSL</span>
+            </button>
+            <button class="aura-btn" id="btnTeleprompter">
+                <i class="fas fa-scroll"></i>
+                <span>Teleprompter</span>
+            </button>
+            <button class="aura-btn" id="btnAURA">
+                <i class="fas fa-microphone-alt"></i>
+                <span>AURA</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="main-workspace" id="main-content">
+        <!-- Track Sidebar -->
+        <aside class="track-sidebar">
+            <div class="sidebar-header">
+                <button class="add-track-btn" id="addTrack">
+                    <i class="fas fa-plus"></i> Track
+                </button>
+                <div class="track-view-modes">
+                    <button class="view-mode active" aria-label="List View"><i class="fas fa-list"></i></button>
+                    <button class="view-mode" aria-label="Grid View"><i class="fas fa-th-large"></i></button>
+                </div>
+            </div>
+
+            <div class="tracks-list" id="tracksList">
+            </div>
+        </aside>
+
+        <!-- Center: Arrangement -->
+        <main class="timeline-container" id="timelineContainer">
+            <div class="timeline-ruler">
+                <div class="ruler-markers">
+                    <span>1.1.1</span><span>1.2.1</span><span>1.3.1</span><span>1.4.1</span>
+                    <span>2.1.1</span><span>2.2.1</span><span>2.3.1</span><span>2.4.1</span>
+                    <span>3.1.1</span><span>3.2.1</span><span>3.3.1</span><span>3.4.1</span>
+                </div>
+                <div class="playhead-ruler" id="playheadRuler"></div>
+            </div>
+
+            <div class="arrangement-toolbar">
+                <div class="arrangement-summary">
+                    <div class="summary-card">
+                        <span class="summary-label">Focus</span>
+                        <span class="summary-value" id="selectedTrackLabel">Track 1</span>
+                    </div>
+                    <div class="summary-card">
+                        <span class="summary-label">Clips</span>
+                        <span class="summary-value" id="arrangementClipCount">0</span>
+                    </div>
+                    <div class="summary-card">
+                        <span class="summary-label">Plugins</span>
+                        <span class="summary-value" id="arrangementPluginCount">0</span>
+                    </div>
+                </div>
+                <div class="arrangement-hint" id="arrangementHint">
+                    Drop audio onto lanes, double-click browser files to place them, click a clip to edit it, and use Delete or Ctrl+D for fast arrangement work.
+                </div>
+            </div>
+
+            <div class="arrangement-view" id="arrangementView">
+                <div class="playhead" id="playhead"></div>
+            </div>
+
+            <!-- Bottom: Plugin Rack -->
+            <div class="plugin-rack-panel">
+                <div class="panel-tabs">
+                    <button class="tab-btn active" data-panel="plugins"><i class="fas fa-plug"></i> Plugins</button>
+                    <button class="tab-btn" data-panel="browser"><i class="fas fa-folder-open"></i> Browser</button>
+                    <button class="tab-btn" data-panel="metadata"><i class="fas fa-tags"></i> Metadata</button>
+                    <button class="tab-btn" data-panel="fingerprint"><i class="fas fa-fingerprint"></i> Fingerprint</button>
+                    <button class="tab-btn" data-panel="errors"><i class="fas fa-exclamation-triangle"></i> Errors</button>
+                    <button class="tab-btn" data-panel="edit"><i class="fas fa-cut"></i> Edit</button>
+                    <button class="tab-btn" data-panel="takes"><i class="fas fa-layer-group"></i> Takes</button>
+                </div>
+                <div class="panel-content" id="takesPanel" style="display:none">
+                    <!-- rendered by TitanComping.renderTakesPanel() -->
+                </div>
+                <div class="panel-content" id="browserPanel" style="display:none">
+                    <div class="browser-toolbar">
+                        <button class="browser-btn" id="importAudio"><i class="fas fa-file-audio"></i> Import Audio</button>
+                        <button class="browser-btn" id="browseFolder"><i class="fas fa-folder-open"></i> Browse Folder</button>
+                        <button class="browser-btn" id="importSession"><i class="fas fa-folder-open"></i> Open Session</button>
+                        <button class="browser-btn" id="exportMixdown"><i class="fas fa-file-export"></i> Export Mixdown</button>
+                    </div>
+                    <div class="browser-content">
+                        <div class="browser-tree">
+                            <div class="browser-node"><i class="fas fa-folder"></i> Audio Files</div>
+                            <div class="browser-children" id="browserAudioList"></div>
+                            <div class="browser-node"><i class="fas fa-folder"></i> Recordings</div>
+                            <div class="browser-children" id="browserRecordingList"></div>
+                        </div>
+                        <div class="browser-preview" id="browserPreview">
+                            <div class="preview-placeholder">Select a file to preview</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-content" id="metadataPanel" style="display:none">
+                    <div class="metadata-editor">
+                        <div class="meta-field">
+                            <label>Title</label>
+                            <input type="text" id="metaTitle" placeholder="Session Title">
+                        </div>
+                        <div class="meta-field">
+                            <label>Artist</label>
+                            <input type="text" id="metaArtist" placeholder="Artist Name">
+                        </div>
+                        <div class="meta-field">
+                            <label>Album</label>
+                            <input type="text" id="metaAlbum" placeholder="Album Name">
+                        </div>
+                        <div class="meta-field">
+                            <label>Genre</label>
+                            <input type="text" id="metaGenre" placeholder="Genre">
+                        </div>
+                        <div class="meta-field">
+                            <label>BPM</label>
+                            <input type="number" id="metaBPM" placeholder="120" min="1" max="999">
+                        </div>
+                        <div class="meta-field">
+                            <label>Key</label>
+                            <select id="metaKey">
+                                <option value="">None</option>
+                                <option>C</option><option>G</option><option>D</option><option>A</option><option>E</option><option>B</option><option>F#</option><option>C#</option>
+                                <option>F</option><option>Bb</option><option>Eb</option><option>Ab</option><option>Db</option><option>Gb</option><option>Cb</option>
+                            </select>
+                        </div>
+                        <div class="meta-field">
+                            <label>Comments</label>
+                            <textarea id="metaComments" rows="3" placeholder="Session notes..."></textarea>
+                        </div>
+                        <button class="browser-btn" id="applyMetadata"><i class="fas fa-check"></i> Apply Metadata</button>
+                    </div>
+                </div>
+                <div class="panel-content" id="fingerprintPanel" style="display:none">
+                    <div class="fingerprint-toolbar">
+                        <button class="browser-btn" id="fpScanAll"><i class="fas fa-fingerprint"></i> Fingerprint All Clips</button>
+                        <button class="browser-btn" id="fpFindMatches"><i class="fas fa-search"></i> Find Duplicates</button>
+                    </div>
+                    <div class="fingerprint-status" id="fpStatus">No fingerprints created yet.</div>
+                    <div class="fingerprint-results" id="fpResults"></div>
+                    <div class="fingerprint-db-stats" id="fpStats"></div>
+                </div>
+                <div class="panel-content" id="errorsPanel" style="display:none">
+                    <div class="errors-toolbar" style="padding:6px 12px;display:flex;gap:6px;align-items:center;border-bottom:1px solid var(--border)">
+                        <button class="browser-btn" id="clearErrors"><i class="fas fa-trash"></i> Clear All</button>
+                        <span style="font-size:11px;color:var(--text-dim);margin-left:auto">Press <kbd style="background:var(--bg-surface);padding:1px 5px;border-radius:3px;font-size:10px">E</kbd> during playback/record to mark an error</span>
+                    </div>
+                    <div class="errors-list" id="errorsList" style="padding:8px;overflow-y:auto;max-height:180px">
+                        <div style="color:var(--text-dim);font-size:12px;text-align:center;padding:20px">No errors marked yet</div>
+                    </div>
+                </div>
+                <div class="panel-content" id="editPanel" style="display:none">
+                    <div class="edit-tab-layout">
+                        <div class="edit-tab-main">
+                            <div class="edit-tab-header">
+                                <div class="edit-tab-track-info">
+                                    <span class="summary-label">Track</span>
+                                    <span class="summary-value" id="editTrackLabel">Track 1</span>
+                                </div>
+                                <div class="edit-tab-transport">
+                                    <button class="track-btn" id="editPlay" aria-label="Play"><i class="fas fa-play"></i></button>
+                                    <button class="track-btn" id="editStop" aria-label="Stop"><i class="fas fa-stop"></i></button>
+                                    <button class="track-btn" id="editRewind" aria-label="Rewind"><i class="fas fa-step-backward"></i></button>
+                                </div>
+                                <div class="edit-tab-navigation">
+                                    <button class="browser-btn" id="editNavDAW" title="Back to DAW"><i class="fas fa-home"></i> DAW</button>
+                                    <button class="browser-btn" id="editNavTeleprompter" title="Teleprompter"><i class="fas fa-scroll"></i> TP</button>
+                                    <button class="browser-btn" id="editNavAURA" title="AURA"><i class="fas fa-microphone-alt"></i> AURA</button>
+                                    <button class="browser-btn" id="editNavRDSL" title="RDSL"><i class="fas fa-code"></i> RDSL</button>
+                                    <button class="browser-btn" id="editNavCalibrate" title="Calibration"><i class="fas fa-magic"></i> Cal</button>
+                                </div>
+                            </div>
+                            <div class="edit-tab-clips">
+                                <div class="clip-focus-card">
+                                    <span class="summary-label">Selected Clip</span>
+                                    <span class="summary-value" id="selectedClipLabel">No clip selected</span>
+                                    <span class="clip-focus-meta" id="selectedClipMeta">Click a clip to edit timing, mute, duplicate, or delete it.</span>
+                                    <div class="clip-edit-grid">
+                                        <label class="clip-edit-control">
+                                            <span>Snap</span>
+                                            <select id="clipSnapGrid">
+                                                <option value="0">Off</option>
+                                                <option value="0.1">100 ms</option>
+                                                <option value="0.25">250 ms</option>
+                                                <option value="0.5">500 ms</option>
+                                                <option value="0.6">1 Beat @ 100 BPM</option>
+                                            </select>
+                                        </label>
+                                        <label class="clip-edit-control">
+                                            <span>Fade In</span>
+                                            <input type="range" id="clipFadeIn" min="0" max="2" step="0.01" value="0">
+                                            <small id="clipFadeInValue">0.00s</small>
+                                        </label>
+                                        <label class="clip-edit-control">
+                                            <span>Fade Out</span>
+                                            <input type="range" id="clipFadeOut" min="0" max="2" step="0.01" value="0">
+                                            <small id="clipFadeOutValue">0.00s</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="clip-action-buttons">
+                                    <button class="browser-btn" id="clipSetStart" type="button"><i class="fas fa-crop-alt"></i> Set In</button>
+                                    <button class="browser-btn" id="clipSetEnd" type="button"><i class="fas fa-expand-arrows-alt"></i> Set Out</button>
+                                    <button class="browser-btn" id="clipSplit" type="button"><i class="fas fa-cut"></i> Split</button>
+                                    <button class="browser-btn" id="clipReset" type="button"><i class="fas fa-undo"></i> Reset</button>
+                                    <button class="browser-btn" id="clipNudgeLeft" type="button"><i class="fas fa-arrow-left"></i> Nudge</button>
+                                    <button class="browser-btn" id="clipNudgeRight" type="button">Nudge <i class="fas fa-arrow-right"></i></button>
+                                    <button class="browser-btn" id="clipMuteToggle" type="button"><i class="fas fa-volume-mute"></i> Mute</button>
+                                    <button class="browser-btn" id="clipDuplicate" type="button"><i class="fas fa-copy"></i> Duplicate</button>
+                                    <button class="browser-btn" id="clipDelete" type="button"><i class="fas fa-trash-alt"></i> Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-content" id="pluginsPanel">
+                    <div class="plugin-rack-toolbar">
+                        <div class="track-selector-group">
+                            <label id="pluginTargetLabel">Track</label>
+                            <select id="pluginTrackSelect"></select>
+                        </div>
+                        <button id="addPlugin" class="add-plugin-btn"><i class="fas fa-plus"></i> Add Plugin</button>
+                        <button id="bypassAll" class="add-plugin-btn bypass-all"><i class="fas fa-power-off"></i> Bypass All</button>
+                        <button id="autoWriteBtn" class="add-plugin-btn auto-write" title="Automation Write: move any effect knob during playback to record it"><i class="fas fa-circle-dot"></i> Auto</button>
+                    </div>
+                    <div class="plugin-chain" id="pluginChain"></div>
+                    <div class="plugin-chain-empty" id="pluginChainEmpty">
+                        <i class="fas fa-plug" style="font-size:24px;color:var(--text-dimmer);margin-bottom:8px"></i>
+                        <div class="plugin-chain-empty-text">No plugins on this track</div>
+                        <button id="addPluginEmpty" class="browser-btn" style="margin-top:8px"><i class="fas fa-plus"></i> Add Plugin</button>
+                    </div>
+                </div>
+
+                <!-- Plugin Catalog Modal -->
+                <div class="modal" id="pluginCatalog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Plugin Catalog</h2>
+                            <button class="modal-close" onclick="closePluginCatalog()"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="modal-body" id="pluginCatalogBody"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right: Inspector Panel -->
+        <aside class="inspector-panel">
+            <div class="inspector-tabs">
+                <button class="inspector-tab active" aria-label="Settings"><i class="fas fa-sliders-h"></i></button>
+                <button class="inspector-tab" aria-label="Info"><i class="fas fa-info-circle"></i></button>
+                <button class="inspector-tab" aria-label="Project"><i class="fas fa-project-diagram"></i></button>
+                <button class="inspector-tab toggle-inspector" id="toggleInspector" aria-label="Toggle Panel"><i class="fas fa-chevron-right"></i></button>
+            </div>
+
+            <div class="inspector-content">
+                <div class="inspector-section">
+                    <h3>Track Focus</h3>
+                    <div class="track-focus-card">
+                        <div class="track-focus-header">
+                            <div>
+                                <div class="track-focus-title" id="selectedTrackName">Track 1</div>
+                                <div class="track-focus-subtitle" id="selectedTrackSummary">0 clips â€¢ 0 plugins</div>
+                            </div>
+                            <div class="track-focus-route" id="selectedTrackRoute">Stereo Out</div>
+                        </div>
+                        <div class="track-state-badges" id="selectedTrackStateBadges">
+                            <span class="track-state-badge">Ready</span>
+                        </div>
+                        <div class="inspector-control">
+                            <label>Output Route</label>
+                            <select id="selectedTrackOutputRouteSelect">
+                                <option value="master">Stereo Out</option>
+                                <option value="busA">Bus 1-2</option>
+                                <option value="busB">Bus 3-4</option>
+                            </select>
+                        </div>
+                        <div class="inspector-control">
+                            <label>Pan</label>
+                            <input type="range" id="selectedTrackPan" min="-1" max="1" step="0.01" value="0">
+                            <div class="bus-card-footer"><span>Placement</span><span id="selectedTrackPanValue">Center</span></div>
+                        </div>
+                        <div class="inspector-control">
+                            <label>Sends</label>
+                            <div class="send-control-grid">
+                                <div class="send-control-card">
+                                    <span>Bus 1-2</span>
+                                    <input type="range" id="selectedTrackSend-busA" min="0" max="1" step="0.01" value="0">
+                                    <small id="selectedTrackSendValue-busA">0%</small>
+                                </div>
+                                <div class="send-control-card">
+                                    <span>Bus 3-4</span>
+                                    <input type="range" id="selectedTrackSend-busB" min="0" max="1" step="0.01" value="0">
+                                    <small id="selectedTrackSendValue-busB">0%</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="gpu-stats">
+                            <div class="stat"><span class="stat-label">Clips</span><span class="stat-value" id="selectedTrackClipCount">0</span></div>
+                            <div class="stat"><span class="stat-label">Plugins</span><span class="stat-value" id="selectedTrackPluginCount">0</span></div>
+                        </div>
+                    </div>
+                    <div class="inspector-quick-actions">
+                        <button class="toggle-btn" id="inspectorToggleMute">Mute</button>
+                        <button class="toggle-btn" id="inspectorToggleSolo">Solo</button>
+                        <button class="toggle-btn" id="inspectorToggleArm">Arm</button>
+                        <button class="toggle-btn" id="inspectorToggleMonitor">Monitor</button>
+                    </div>
+                </div>
+
+                <div class="inspector-section">
+                    <h3>AURA Enhancement</h3>
+                    <div class="aura-indicator">
+                        <i class="fas fa-check-circle"></i>
+                        <span id="auraStatusText">No calibration loaded</span>
+                    </div>
+                    <button class="aura-calibrate-btn" id="btnCalibrate">
+                        <i class="fas fa-magic"></i> Recalibrate
+                    </button>
+                    <div class="aura-metrics">
+                        <div class="metric">
+                            <span class="metric-label">Harmonic Match</span>
+                            <div class="metric-bar"><div class="metric-fill" id="auraHarmonicFill" style="width:0%"></div></div>
+                            <span class="metric-value" id="auraHarmonicValue">--</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Transient Response</span>
+                            <div class="metric-bar"><div class="metric-fill" id="auraTransientFill" style="width:0%"></div></div>
+                            <span class="metric-value" id="auraTransientValue">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="inspector-section">
+                    <h3>Bus Routing</h3>
+                    <div class="bus-routing-grid">
+                        <div class="bus-card">
+                            <div class="bus-card-header"><span>Stereo Out</span><span id="busTrackCountValue-master">All tracks</span></div>
+                            <div class="metric-bar"><div class="metric-fill" id="busMeterFill-master" style="width:0%"></div></div>
+                            <div class="bus-card-footer"><span>Level</span><span id="busLevelValue-master">0%</span></div>
+                            <div class="bus-gain-row">
+                                <input type="range" id="busVolume-master" min="0" max="1.25" step="0.01" value="0.85">
+                                <span id="busVolumeValue-master">0.85x</span>
+                            </div>
+                            <div class="bus-gain-row">
+                                <button class="browser-btn" id="masterSafetyToggle" title="Transparent peak protection on the master bus. Defeatable — your mix, your call.">Safety Limiter: ON</button>
+                            </div>
+                        </div>
+                        <div class="bus-card">
+                            <div class="bus-card-header"><span>Bus 1-2</span><span id="busTrackCountValue-busA">0 tracks</span></div>
+                            <div class="metric-bar"><div class="metric-fill" id="busMeterFill-busA" style="width:0%"></div></div>
+                            <div class="bus-card-footer"><span>Level</span><span id="busLevelValue-busA">0%</span></div>
+                            <div class="bus-gain-row">
+                                <input type="range" id="busVolume-busA" min="0" max="1.25" step="0.01" value="1">
+                                <span id="busVolumeValue-busA">1.00x</span>
+                            </div>
+                            <div class="bus-return-row">
+                                <span id="busReturnPluginCount-busA">0 return FX</span>
+                                <button class="browser-btn bus-return-edit" id="busReturnEdit-busA">Edit Return</button>
+                            </div>
+                        </div>
+                        <div class="bus-card">
+                            <div class="bus-card-header"><span>Bus 3-4</span><span id="busTrackCountValue-busB">0 tracks</span></div>
+                            <div class="metric-bar"><div class="metric-fill" id="busMeterFill-busB" style="width:0%"></div></div>
+                            <div class="bus-card-footer"><span>Level</span><span id="busLevelValue-busB">0%</span></div>
+                            <div class="bus-gain-row">
+                                <input type="range" id="busVolume-busB" min="0" max="1.25" step="0.01" value="1">
+                                <span id="busVolumeValue-busB">1.00x</span>
+                            </div>
+                            <div class="bus-return-row">
+                                <span id="busReturnPluginCount-busB">0 return FX</span>
+                                <button class="browser-btn bus-return-edit" id="busReturnEdit-busB">Edit Return</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="inspector-section">
+                    <h3>Automation</h3>
+                    <div class="automation-editor-card">
+                        <div class="automation-grid">
+                            <label class="automation-control">
+                                <span>Scope</span>
+                                <select id="automationScopeSelect">
+                                    <option value="track">Track Focus</option>
+                                    <option value="bus">Bus Gain</option>
+                                    <option value="plugin">Plugin Param</option>
+                                </select>
+                            </label>
+                            <label class="automation-control" id="automationTrackLaneControl">
+                                <span>Lane</span>
+                                <select id="automationTrackLaneSelect">
+                                    <option value="volume">Volume</option>
+                                    <option value="pan">Pan</option>
+                                    <option value="send-busA">Send Bus 1-2</option>
+                                    <option value="send-busB">Send Bus 3-4</option>
+                                </select>
+                            </label>
+                            <label class="automation-control" id="automationBusTargetControl" style="display:none">
+                                <span>Bus</span>
+                                <select id="automationBusTargetSelect">
+                                    <option value="master">Stereo Out</option>
+                                    <option value="busA">Bus 1-2</option>
+                                    <option value="busB">Bus 3-4</option>
+                                </select>
+                            </label>
+                            <label class="automation-control" id="automationPluginTargetControl" style="display:none">
+                                <span>Plugin</span>
+                                <select id="automationPluginSelect"></select>
+                            </label>
+                            <label class="automation-control" id="automationPluginParamControl" style="display:none">
+                                <span>Parameter</span>
+                                <select id="automationPluginParamSelect"></select>
+                            </label>
+                        </div>
+                        <div class="automation-status-row">
+                            <span class="summary-label" id="automationLaneLabel">Track 1 Volume</span>
+                            <span class="summary-value" id="automationPointCount">0 points</span>
+                        </div>
+                        <label class="automation-control">
+                            <span>Value</span>
+                            <input type="range" id="automationValueSlider" min="0" max="1" step="0.01" value="0.75">
+                            <small id="automationValueText">0.75</small>
+                        </label>
+                        <div class="automation-action-row">
+                            <button class="browser-btn" id="automationUseCurrent">Use Live Value</button>
+                            <button class="browser-btn" id="automationWritePoint">Write @ Playhead</button>
+                            <button class="browser-btn" id="automationClearLane">Clear Lane</button>
+                        </div>
+                        <div class="automation-point-list" id="automationPointList">
+                            <div class="automation-point-empty">No automation points on this lane.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="inspector-section">
+                    <h3>Engine Telemetry</h3>
+                    <div class="gpu-stats">
+                        <div class="stat"><span class="stat-label">Active DSP</span><span class="stat-value" id="engineActiveDspValue">0</span></div>
+                        <div class="stat"><span class="stat-label">Tracks</span><span class="stat-value" id="engineTrackCountValue">0</span></div>
+                        <div class="stat"><span class="stat-label">Memory</span><span class="stat-value" id="engineMemoryValue">N/A</span></div>
+                        <div class="stat"><span class="stat-label">Latency</span><span class="stat-value" id="engineLatencyValue">--</span></div>
+                    </div>
+                </div>
+
+                <div class="inspector-section">
+                    <h3>Session Console</h3>
+                    <div class="console-panel" id="consolePanel">
+                        <div class="console-empty">Transport, recording, collaboration, and import events appear here.</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Plugin Editor Modal -->
+    <div class="modal" id="pluginEditor">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="pluginEditorTitle">Plugin Editor</h2>
+                <button class="modal-close" onclick="closePluginEditor()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="pluginEditorBody"></div>
+        </div>
+    </div>
+
+    <script src="titan-driver-runtime.js"></script>
+        <script src="plugins/titan-plugins.js"></script>
+    <script src="node_modules/onnxruntime-web/dist/ort.min.js"></script>
+    <script src="vendor/lame.all.js"></script>
+    <script src="vendor/flac-location.js"></script>
+    <script src="vendor/libflac.wasm.js"></script>
+    <script src="export-encoders.js"></script>
+    <script src="voxgenesis-model-adapter.js"></script>
+    <script src="vox-engine.js"></script>
+    <script src="vox-polish.js"></script>
+    <script src="rdsl-bot.js"></script>
+    <script src="rdsl-compiler.js"></script>
+    <script src="rdsl-loader.js"></script>
+    <script src="comping.js"></script>
+    <script src="wave-diag.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

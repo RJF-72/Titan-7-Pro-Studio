@@ -1,0 +1,81 @@
+<!-- CockpitUI.html -->
+<template id="cockpit-ui">
+  <style>
+    :host {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 12px;
+      padding: 20px;
+      background: var(--titan-bg-dark, #0F0F12);
+      color: var(--titan-text-primary, #EAEAEA);
+      font-family: 'Inter', sans-serif;
+      height: 100%; width: 100%;
+    }
+    .cockpit-header {
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid #2A2A2E; padding-bottom: 12px;
+    }
+    .cockpit-header h2 { margin: 0; font-size: 16px; letter-spacing: 1px; }
+    .metric-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    }
+    .metric-card {
+      background: #151518; border: 1px solid #2A2A2E; border-radius: 8px;
+      padding: 16px; display: flex; flex-direction: column; align-items: center;
+    }
+    .metric-value { font-size: 28px; font-weight: 700; color: #00E5FF; }
+    .metric-label { font-size: 10px; text-transform: uppercase; color: #888; margin-top: 6px; }
+    .cockpit-footer {
+      display: flex; gap: 10px; justify-content: flex-end;
+    }
+    .cockpit-btn {
+      padding: 8px 14px; border: 1px solid #333; background: #1A1A1E; color: #EAEAEA;
+      border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600;
+    }
+    .cockpit-btn.active { background: #00E5FF; color: #000; border-color: #00E5FF; }
+  </style>
+
+  <div class="cockpit-header">
+    <h2>TITAN COCKPIT™</h2>
+    <span style="font-size:11px;color:#888">Session Command Center</span>
+  </div>
+
+  <div class="metric-grid">
+    <div class="metric-card">
+      <div class="metric-value" id="latencyVal">0.4</div>
+      <div class="metric-label">Latency (ms)</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value" id="cpuVal">12</div>
+      <div class="metric-label">DSP Load %</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value" id="trackVal">4</div>
+      <div class="metric-label">Active Tracks</div>
+    </div>
+  </div>
+
+  <div class="cockpit-footer">
+    <button class="cockpit-btn active" id="monitorBtn">Monitor</button>
+    <button class="cockpit-btn" id="safeBtn">Safe Mode</button>
+  </div>
+</template>
+
+<script>
+  class CockpitUI extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this.shadowRoot.appendChild(document.getElementById('cockpit-ui').content.cloneNode(true));
+      this.bindRDSLListener();
+    }
+    bindRDSLListener() {
+      window.addEventListener('titan-rdsl-update', (e) => {
+        if (e.detail.plugin === 'cockpit') {
+          // handle RDSL state update
+        }
+      });
+    }
+  }
+  customElements.define('cockpit-ui', CockpitUI);
+</script>

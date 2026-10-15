@@ -1,0 +1,166 @@
+<!-- EchoWeaveUI.html -->
+<template id="echo-weave-ui">
+  <style>
+    :host {
+      display: grid;
+      grid-template-rows: 1fr 160px 100px;
+      background: var(--titan-bg-dark, #0F0F12);
+      height: 100%; width: 100%;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    /* Tap Sequencer Grid */
+    .sequencer-container {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px; background: #121215; border-bottom: 1px solid #2A2A2E;
+    }
+    .sequencer-grid {
+      display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px;
+      width: 100%; max-width: 600px;
+    }
+    .step-btn {
+      aspect-ratio: 1; background: #1A1A1E; border: 1px solid #333;
+      border-radius: 6px; cursor: pointer; position: relative;
+      transition: all 0.15s;
+    }
+    .step-btn.active {
+      background: #00E5FF; border-color: #00E5FF;
+      box-shadow: 0 0 12px rgba(0, 229, 255, 0.4);
+    }
+    .step-btn .velocity-bar {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: rgba(0,0,0,0.3); border-radius: 0 0 5px 5px;
+      height: var(--velocity, 50%);
+    }
+
+    /* Center Panel: Time & Feedback */
+    .main-controls {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px; padding: 20px; align-items: center;
+    }
+    .control-group { display: flex; flex-direction: column; align-items: center; }
+    .control-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 8px; }
+    
+    /* Animated Feedback Path Visualizer */
+    .feedback-visualizer {
+      width: 100%; height: 40px; background: #0A0A0C; border-radius: 20px;
+      position: relative; overflow: hidden; border: 1px solid #333;
+    }
+    .feedback-pulse {
+      position: absolute; top: 0; bottom: 0; width: 20px;
+      background: linear-gradient(90deg, transparent, #FF3366, transparent);
+      left: 0; animation: pulseLoop 2s linear infinite;
+      opacity: var(--feedback-opacity, 0.5);
+    }
+    @keyframes pulseLoop { 0% { left: -20px; } 100% { left: 100%; } }
+
+    /* Bottom Panel: Modulation & Mix */
+    .bottom-panel {
+      display: flex; justify-content: space-around; align-items: center;
+      padding: 15px; background: #151518; border-top: 1px solid #2A2A2E;
+    }
+    .lfo-scope {
+      width: 120px; height: 60px; background: #0A0A0C; border-radius: 4px;
+      border: 1px solid #333;
+    }
+  </style>
+
+  <!-- 1. Sequencer -->
+  <div class="sequencer-container">
+    <div class="sequencer-grid" id="seqGrid">
+      <!-- Generated via JS: 8 steps representing rhythmic subdivisions -->
+    </div>
+  </div>
+
+  <!-- 2. Main Controls -->
+  <div class="main-controls">
+    <div class="control-group">
+      <span class="control-label">Time / Subdivision</span>
+      <div class="titan-knob" data-param="Subdivision" style="--value: 25"></div>
+      <span style="font-size:11px; color:#00E5FF; margin-top:4px;" id="timeDisplay">1/8T</span>
+    </div>
+    
+    <div class="control-group" style="width: 100%;">
+      <span class="control-label">Feedback Path</span>
+      <div class="feedback-visualizer" id="feedbackViz" style="--feedback-opacity: 0.5">
+        <div class="feedback-pulse"></div>
+      </div>
+      <div class="titan-knob" data-param="FeedbackLevel" style="--value: 50; margin-top: 10px;"></div>
+    </div>
+
+    <div class="control-group">
+      <span class="control-label">Ping Pong</span>
+      <div class="toggle-switch" data-param="PingPong">
+        <div class="toggle-thumb"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Bottom Panel -->
+  <div class="bottom-panel">
+    <div class="control-group">
+      <span class="control-label">Wow / Flutter</span>
+      <canvas class="lfo-scope" id="lfoScope"></canvas>
+      <div style="display:flex; gap:10px; margin-top:8px;">
+        <div class="titan-knob" data-param="WowFlutterDepth" style="--value: 30; width:40px; height:40px;"></div>
+        <div class="titan-knob" data-param="WowFlutterRate" style="--value: 20; width:40px; height:40px;"></div>
+      </div>
+    </div>
+    
+    <div class="control-group">
+      <span class="control-label">Feedback Distortion</span>
+      <div class="titan-knob" data-param="FeedbackDistortion" style="--value: 15"></div>
+    </div>
+
+    <div class="control-group">
+      <span class="control-label">Dry / Wet</span>
+      <div class="titan-knob" data-param="DryWetMix" style="--value: 50"></div>
+    </div>
+  </div>
+</template>
+
+<script>
+  class EchoWeaveUI extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this.shadowRoot.appendChild(document.getElementById('echo-weave-ui').content.cloneNode(true));
+      this.initSequencer();
+      this.initLFOScope();
+      this.bindRDSLListener();
+    }
+
+    initSequencer() {
+      const grid = this.shadowRoot.getElementById('seqGrid');
+      for (let i = 0; i < 8; i++) {
+        const btn = document.createElement('div');
+        btn.className = 'step-btn';
+        btn.innerHTML = `<div class="velocity-bar" style="--velocity: ${Math.random() * 80 + 20}%"></div>`;
+        btn.addEventListener('click', () => btn.classList.toggle('active'));
+        grid.appendChild(btn);
+      }
+    }
+
+    initLFOScope() {
+      const canvas = this.shadowRoot.getElementById('lfoScope');
+      const ctx = canvas.getContext('2d');
+      // Draws a real-time sine wave representing the wow/flutter LFO
+    }
+
+    bindRDSLListener() {
+      window.addEventListener('titan-rdsl-update', (e) => {
+        if (e.detail.plugin === 'echoweave') {
+          if (e.detail.action === 'dotted_eighth_pingpong_wobble') {
+            this.updateTimeDisplay('1/8T');
+            this.togglePingPong(true);
+            this.animateKnob('WowFlutterDepth', 45);
+            this.animateKnob('WowFlutterRate', 15);
+            this.animateKnob('FeedbackLevel', 55);
+            this.showFeedback("EchoWeave: Dotted-eighth ping-pong delay engaged with 45% tape wobble modulation.");
+          }
+        }
+      });
+    }
+  }
+  customElements.define('echo-weave-ui', EchoWeaveUI);
+</script>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Runner</title>
+<style>
+  body { margin:0; background:#000; }
+  #host { display:block; width:100vw; height:100vh; }
+</style>
+</head>
+<body>
+<div id="host"></div>
+<script src="http://127.0.0.1:8800/titan-plugins.js"></script>
+<script>
+  const tag = new URLSearchParams(location.search).get('tag');
+  const file = new URLSearchParams(location.search).get('file');
+  TitanPlugins.loadUI(tag, file).then(() => {
+    const el = document.createElement(tag);
+    document.getElementById('host').appendChild(el);
+  });
+</script>
+</body>
+</html>

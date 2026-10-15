@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Titan 7 Pro - AURA Calibration</title>
+    <link rel="icon" href="icon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="calibration-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="calibration-body">
+    <div class="calibration-topbar">
+        <a href="index.html" class="back-to-daw" id="btnBackToDAW">
+            <i class="fas fa-arrow-left"></i> Back to DAW
+        </a>
+    </div>
+    <div class="calibration-container">
+        <div class="calibration-header">
+            <div class="calibration-logo">
+                <i class="fas fa-microphone-alt"></i>
+                <h1>AURA Calibration</h1>
+            </div>
+            <p class="calibration-subtitle">AI-Powered Microphone Analysis & Profiling</p>
+        </div>
+
+        <div class="calibration-steps" id="calibrationSteps">
+            <!-- Step 1: Introduction -->
+            <div class="step active" id="step1">
+                <div class="step-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <h2>Ready to Calibrate</h2>
+                <p>This process will analyze your microphone's unique characteristics and create a custom profile to match it to world-class studio microphones.</p>
+                <div class="step-info">
+                    <ul>
+                        <li><i class="fas fa-check"></i> Takes only 5 seconds</li>
+                        <li><i class="fas fa-check"></i> Analyzes frequency response</li>
+                        <li><i class="fas fa-check"></i> Measures transient response</li>
+                        <li><i class="fas fa-check"></i> Creates custom DSP profile</li>
+                    </ul>
+                </div>
+
+                <div class="mic-selection">
+                    <div class="mic-label-row">
+                        <label for="micSelect"><i class="fas fa-microphone"></i> Select Microphone to Calibrate</label>
+                        <button type="button" class="mic-refresh-btn" id="btnRefreshMics" title="Refresh microphone list">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <select id="micSelect">
+                        <option value="">Loading microphones...</option>
+                    </select>
+                    <p class="mic-hint">Choose any microphone: laptop, webcam, Bluetooth headset, USB mic, etc.</p>
+
+                    <label class="noise-toggle" for="noiseCancelToggle">
+                        <input type="checkbox" id="noiseCancelToggle" checked>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label"><i class="fas fa-wind"></i> AURA Noise Cancellation</span>
+                    </label>
+                    <p class="mic-hint">State-of-the-art AI noise suppression for clean calibration.</p>
+                </div>
+
+                <button class="btn-calibration-start" id="btnCalibrationStart">
+                    <i class="fas fa-play"></i> Start Calibration
+                </button>
+            </div>
+
+            <!-- Step 2: Recording Test Signal -->
+            <div class="step" id="step2">
+                <div class="step-icon recording" id="recordingIcon">
+                    <i class="fas fa-microphone"></i>
+                </div>
+                <h2>Speak Normally</h2>
+                <p>Please speak or sing naturally for 5 seconds. Use your normal recording volume and distance.</p>
+                
+                <div class="recording-meta">
+                    <span class="recording-badge" id="noiseCancelBadge"><i class="fas fa-wind"></i> Noise Cancellation Active</span>
+                    <span class="recording-badge" id="lowLatencyBadge"><i class="fas fa-bolt"></i> Ultra-Low Latency</span>
+                </div>
+
+                <div class="recording-visual">
+                    <div class="countdown" id="countdown">5</div>
+                    <canvas id="recordingWaveform"></canvas>
+                </div>
+
+                <div class="recording-instructions">
+                    <div class="instruction active" id="inst1">
+                        <i class="fas fa-volume-up"></i>
+                        <span>Speak at normal volume</span>
+                    </div>
+                    <div class="instruction" id="inst2">
+                        <i class="fas fa-user"></i>
+                        <span>Maintain your normal distance</span>
+                    </div>
+                    <div class="instruction" id="inst3">
+                        <i class="fas fa-comments"></i>
+                        <span>Use natural inflection</span>
+                    </div>
+                </div>
+
+                <button class="btn-calibration-cancel" id="btnCalibrationCancel">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+
+            <!-- Step 3: AI Analysis -->
+            <div class="step" id="step3">
+                <div class="step-icon analyzing">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h2>Measured Analysis in Progress</h2>
+                <p>Analyzing the captured recording to measure spectral response, dynamics, and tone balance.</p>
+
+                <div class="analysis-progress">
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <i class="fas fa-wave-square"></i>
+                            <span>Frequency Response Analysis</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="freqProgress"></div>
+                        </div>
+                        <span class="progress-status" id="freqStatus">Analyzing...</span>
+                    </div>
+
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <i class="fas fa-bolt"></i>
+                            <span>Transient Response Mapping</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="transProgress"></div>
+                        </div>
+                        <span class="progress-status" id="transStatus">Waiting...</span>
+                    </div>
+
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <i class="fas fa-atom"></i>
+                            <span>Harmonic Distortion Profile</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="harmProgress"></div>
+                        </div>
+                        <span class="progress-status" id="harmStatus">Waiting...</span>
+                    </div>
+
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <i class="fas fa-cube"></i>
+                            <span>Tone Balance Mapping</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="spatProgress"></div>
+                        </div>
+                        <span class="progress-status" id="spatStatus">Waiting...</span>
+                    </div>
+
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <i class="fas fa-magic"></i>
+                            <span>DSP Profile Generation</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="dspProgress"></div>
+                        </div>
+                        <span class="progress-status" id="dspStatus">Waiting...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Results -->
+            <div class="step" id="step4">
+                <div class="step-icon complete">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2>Calibration Complete!</h2>
+                <p>Your custom microphone profile has been generated successfully.</p>
+
+                <div class="calibration-results">
+                    <div class="result-card">
+                        <h3>Selected Microphone</h3>
+                        <div class="mic-detection">
+                            <i class="fas fa-microphone"></i>
+                            <div class="mic-info">
+                                <span class="mic-name" id="micNameValue">--</span>
+                                <span class="mic-confidence" id="micCaptureSummary">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>Acoustic Characteristics</h3>
+                        <div class="characteristics-grid">
+                            <div class="char-item">
+                                <span class="char-label">Frequency Range</span>
+                                <span class="char-value" id="resultFrequencyRange">--</span>
+                            </div>
+                            <div class="char-item">
+                                <span class="char-label">Self Noise</span>
+                                <span class="char-value" id="resultSelfNoise">--</span>
+                            </div>
+                            <div class="char-item">
+                                <span class="char-label">Average Level</span>
+                                <span class="char-value" id="resultAverageLevel">--</span>
+                            </div>
+                            <div class="char-item">
+                                <span class="char-label">Peak Level</span>
+                                <span class="char-value" id="resultPeakLevel">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="result-card recommended">
+                        <h3><i class="fas fa-star"></i> Recommended Target</h3>
+                        <div class="recommended-mic">
+                            <div class="rec-mic-header">
+                                <i class="fas fa-microphone"></i>
+                                <div>
+                                    <h4 id="recommendedMicName">--</h4>
+                                    <p id="recommendedMicReason">--</p>
+                                </div>
+                            </div>
+                            <div class="match-score">
+                                <div class="score-circle">
+                                    <svg viewBox="0 0 36 36">
+                                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                        <path class="circle" id="recommendedScoreCircle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                    </svg>
+                                    <span class="score-text" id="recommendedScoreText">--</span>
+                                </div>
+                                <div class="score-details">
+                                    <div class="score-item">
+                                        <span class="score-label">Harmonic Match</span>
+                                        <span class="score-value" id="harmonicMatchValue">--</span>
+                                    </div>
+                                    <div class="score-item">
+                                        <span class="score-label">Tonal Balance</span>
+                                        <span class="score-value" id="tonalBalanceValue">--</span>
+                                    </div>
+                                    <div class="score-item">
+                                        <span class="score-label">Transient Response</span>
+                                        <span class="score-value" id="transientResponseValue">--</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="calibration-actions">
+                    <button class="btn-primary" id="btnApplyProfile">
+                        <i class="fas fa-check"></i> Apply Profile & Continue
+                    </button>
+                    <button class="btn-secondary" id="btnRecalibrate">
+                        <i class="fas fa-redo"></i> Recalibrate
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AURA Bot Assistant -->
+        <div class="calibration-bot" id="calibrationBot">
+            <div class="bot-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="bot-messages-mini" id="calibrationBotMessages">
+                <div class="bot-message-mini">
+                    <p>Welcome! I'll guide you through the calibration process. Click "Start Calibration" when you're ready.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="calibration-app.js"></script>
+</body>
+</html>

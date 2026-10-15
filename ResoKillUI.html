@@ -1,0 +1,125 @@
+<!-- ResoKillUI.html -->
+<template id="reso-kill-ui">
+  <style>
+    :host {
+      display: grid;
+      grid-template-rows: 1fr 160px;
+      background: var(--titan-bg-dark, #0F0F12);
+      height: 100%; width: 100%;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    /* Main Visualizer: Curve + Heatmap */
+    .visualizer-container {
+      position: relative; width: 100%; height: 100%;
+      background: #0A0A0C; border-bottom: 1px solid #2A2A2E;
+    }
+    #eqCanvas { width: 100%; height: 100%; }
+    
+    /* Resonance Heatmap Overlay */
+    .heatmap-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; mix-blend-mode: screen;
+    }
+    .resonance-zone {
+      position: absolute; bottom: 0; width: 40px;
+      background: linear-gradient(to top, rgba(255, 51, 102, 0.8), transparent);
+      border-top: 2px solid #FF3366;
+      animation: pulse-reso 1s infinite alternate;
+    }
+    @keyframes pulse-reso { from { opacity: 0.5; height: 20%; } to { opacity: 1.0; height: 40%; } }
+
+    /* Bottom Controls: XYZ Pad & Knobs */
+    .controls-panel {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 20px; padding: 20px;
+    }
+    
+    /* Interactive XYZ Pad (Freq, Gain, Q) */
+    .xyz-pad {
+      width: 100%; height: 100%; background: #151518;
+      border-radius: 8px; border: 1px solid #333; position: relative;
+      cursor: crosshair;
+    }
+    .xyz-puck {
+      width: 16px; height: 16px; background: #00E5FF;
+      border-radius: 50%; position: absolute;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
+      pointer-events: none; /* Controlled by pad click/drag */
+    }
+    .xyz-label {
+      position: absolute; font-size: 9px; color: #666; letter-spacing: 1px;
+    }
+    .label-freq { bottom: 4px; left: 50%; transform: translateX(-50%); }
+    .label-gain { top: 50%; left: 4px; transform: translateY(-50%) rotate(-90deg); }
+
+    .knob-row {
+      display: flex; justify-content: space-around; align-items: center;
+    }
+    .control-group { display: flex; flex-direction: column; align-items: center; }
+    .control-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 8px; }
+  </style>
+
+  <!-- Visualizer -->
+  <div class="visualizer-container">
+    <canvas id="eqCanvas"></canvas>
+    <div class="heatmap-overlay" id="heatmapOverlay">
+      <!-- Dynamically injected resonance zones -->
+      <div class="resonance-zone" id="resoZone" style="left: 30%; display: none;"></div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-panel">
+    <!-- XYZ Pad -->
+    <div class="xyz-pad" id="xyzPad">
+      <span class="xyz-label label-freq">FREQUENCY (Hz)</span>
+      <span class="xyz-label label-gain">GAIN (dB)</span>
+      <div class="xyz-puck" id="xyzPuck" style="left: 30%; top: 50%;"></div>
+    </div>
+
+    <!-- Fine-Tune Knobs -->
+    <div class="knob-row">
+      <div class="control-group">
+        <span class="control-label">Base Q</span>
+        <div class="titan-knob" data-param="BaseQ" style="--value: 40"></div>
+      </div>
+      <div class="control-group">
+        <span class="control-label">Threshold</span>
+        <div class="titan-knob" data-param="Threshold" style="--value: 60"></div>
+      </div>
+      <div class="control-group">
+        <span class="control-label">Attack</span>
+        <div class="titan-knob" data-param="AttackMs" style="--value: 20"></div>
+      </div>
+      <div class="control-group">
+        <span class="control-label">Release</span>
+        <div class="titan-knob" data-param="ReleaseMs" style="--value: 150"></div>
+      </div>
+      <div class="control-group">
+        <span class="control-label">Dynamic Q</span>
+      <div class="toggle-switch active" data-param="DynamicQEnable"></div>
+    </div>
+  </div>
+</template>
+
+<script>
+  class ResoKillUI extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this.shadowRoot.appendChild(document.getElementById('reso-kill-ui').content.cloneNode(true));
+      this.bindRDSLListener();
+    }
+    bindRDSLListener() {
+      window.addEventListener('titan-rdsl-update', (e) => {
+        if (e.detail.plugin === 'resokillui') {
+          // handle RDSL state update
+        }
+      });
+    }
+  }
+  customElements.define('reso-kill-ui', ResoKillUI);
+</script>
